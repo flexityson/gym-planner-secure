@@ -11,7 +11,7 @@
     "axios": "^1.6.0"
   },
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   },
   "keywords": ["gym", "fitness", "workout", "planner"],
   "author": "CAMTECH",
