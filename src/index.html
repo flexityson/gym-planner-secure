@@ -1,0 +1,4109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GYM PLANNER CAMTECH | Elite Protocol v3.5</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --secondary: #a855f7;
+      --accent: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --background: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    body {
+      background-color: var(--background);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0, transparent 50%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 40px 20px;
+      position: relative;
+    }
+
+/* Add this to your existing CSS */
+.btn-feedback:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+}
+/* Add to existing CSS */
+.evidence-badge {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pro-tip {
+  border-left: 3px solid var(--warning);
+  padding-left: 12px;
+  margin: 10px 0;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.study-reference {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 5px;
+}
+.follow-up-btn {
+  padding: 6px 12px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 20px;
+  color: var(--primary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.gemini-powered {
+  background: linear-gradient(45deg, #4285f4, #34a853, #fbbc05, #ea4335);
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+.follow-up-btn:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.exercise-highlight {
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.exercise-highlight:hover {
+  background: rgba(99, 102, 241, 0.3) !important;
+  transform: translateY(-1px);
+}
+@media (max-width: 850px) {
+  .feedback-section {
+    margin-top: 40px;
+    padding-top: 30px;
+  }
+}
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    header { text-align: center; margin-bottom: 40px; }
+    .brand-badge {
+      display: inline-block; padding: 6px 16px; background: rgba(99, 102, 241, 0.1);
+      border: 1px solid var(--primary); color: var(--primary); border-radius: 100px;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
+    }
+
+    h1 { font-size: 2.8rem; font-weight: 800; margin: 10px 0; }
+    .camtech-text { color: var(--primary); }
+
+    .preset-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
+    .preset-btn {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+      color: var(--text-main); padding: 8px 16px; border-radius: 12px; cursor: pointer;
+      font-size: 0.8rem; transition: 0.3s; display: flex; align-items: center; gap: 8px;
+    }
+    .preset-btn:hover { background: var(--primary); transform: translateY(-2px); }
+
+    .grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 30px; }
+
+    .card {
+      background: var(--card-bg); backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border); border-radius: 24px; padding: 32px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+
+    .section-header { 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between;
+      gap: 12px; 
+      margin-bottom: 24px; 
+      border-bottom: 1px solid var(--glass-border); 
+      padding-bottom: 15px; 
+    }
+
+    .api-status {
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .api-status.online { background: rgba(16, 185, 129, 0.2); color: var(--accent); }
+    .api-status.offline { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+    .form-group { margin-bottom: 18px; position: relative; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+    
+    select, input {
+      width: 100%; padding: 12px 16px; background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--glass-border); border-radius: 12px; color: white; transition: 0.3s;
+    }
+    input:invalid, select:invalid {
+      border-color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
+    .error-message {
+      color: var(--danger);
+      font-size: 0.75rem;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+    .btn-group { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+    .btn {
+      width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .btn-generate { background: linear-gradient(to right, var(--primary), var(--secondary)); color: white; }
+    .btn-download { background: rgba(255, 255, 255, 0.05); color: var(--text-main); border: 1px solid var(--glass-border); display: none; }
+    .btn-api { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .btn-spotify { background: rgba(29, 185, 84, 0.1); color: #1DB954; border: 1px solid rgba(29, 185, 84, 0.3); }
+    .btn-timer { background: rgba(236, 72, 153, 0.1); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.3); }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+    #result { 
+      white-space: pre-line; line-height: 1.8; font-size: 0.95rem; 
+      max-height: 450px; overflow-y: auto; padding-right: 10px;
+    }
+
+    .exercise-video {
+      margin: 15px 0;
+      padding: 15px;
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    .video-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .video-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .video-link:hover { text-decoration: underline; }
+
+    .nutrition-info {
+      margin: 15px 0;
+      padding: 15px;
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .nutrition-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .macro-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .macro-item {
+      text-align: center;
+      padding: 8px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+    }
+    .macro-value {
+      font-weight: 800;
+      color: var(--accent);
+      font-size: 1rem;
+    }
+    .macro-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .weather-info {
+      margin: 10px 0;
+      padding: 12px;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      font-size: 0.85rem;
+    }
+    .weather-title {
+      font-weight: 600;
+      color: #3b82f6;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .api-loading {
+      display: none;
+      text-align: center;
+      padding: 10px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .api-loading i { animation: spin 1s linear infinite; }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 25px; }
+    .stat-card {
+      background: rgba(255,255,255,0.03); padding: 15px; border-radius: 16px;
+      text-align: center; border: 1px solid var(--glass-border);
+    }
+    .stat-num { display: block; font-size: 1.2rem; font-weight: 800; color: var(--accent); }
+    .stat-lab { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+
+    .quote-box {
+        margin-top: 20px; padding: 15px; background: rgba(16, 185, 129, 0.1);
+        border-radius: 15px; border: 1px dashed var(--accent); font-style: italic; font-size: 0.85rem; color: var(--accent);
+    }
+
+    .history-card { margin-top: 25px; background: rgba(255,255,255,0.02); border-radius: 20px; padding: 20px; border: 1px solid var(--glass-border); display: none; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
+    th { text-align: left; color: var(--text-muted); padding: 8px; border-bottom: 1px solid var(--glass-border); }
+    td { padding: 10px 8px; color: var(--text-main); }
+
+    /* Chatbot Styles */
+    .chatbot-container {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 1000;
+    }
+
+    .chatbot-btn {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+      transition: all 0.3s ease;
+      border: none;
+    }
+
+    .chatbot-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 15px 30px rgba(99, 102, 241, 0.6);
+    }
+
+    .chatbot-window {
+      position: absolute;
+      bottom: 70px;
+      right: 0;
+      width: 350px;
+      height: 500px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chatbot-header {
+      padding: 20px;
+      background: rgba(99, 102, 241, 0.1);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chatbot-header h3 {
+      color: var(--text-main);
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chatbot-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .chatbot-close:hover {
+      color: var(--primary);
+    }
+
+    .chatbot-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      line-height: 1.4;
+      font-size: 0.9rem;
+      word-wrap: break-word;
+    }
+
+    .bot-message {
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+    }
+
+    .user-message {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+    }
+
+    .chatbot-input {
+      padding: 20px;
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      gap: 10px;
+    }
+
+    .chatbot-input input {
+      flex: 1;
+      padding: 12px 16px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    .chatbot-input button {
+      padding: 12px 20px;
+      background: var(--primary);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .chatbot-input button:hover {
+      background: #4f46e5;
+    }
+
+    .typing-indicator {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      padding: 12px 16px;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 18px;
+      align-self: flex-start;
+      max-width: 80px;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-5px); }
+    }
+
+    /* Timer Styles */
+    .timer-container {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      z-index: 1000;
+    }
+
+    .timer-btn {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(to right, #ec4899, #8b5cf6);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4);
+      transition: all 0.3s ease;
+      border: none;
+    }
+
+    .timer-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 15px 30px rgba(236, 72, 153, 0.6);
+    }
+
+    .timer-window {
+      position: absolute;
+      bottom: 70px;
+      left: 0;
+      width: 280px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1001;
+    }
+
+    .timer-header {
+      padding: 15px;
+      background: rgba(236, 72, 153, 0.1);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .timer-header h3 {
+      color: var(--text-main);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .timer-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .timer-close:hover {
+      color: #ec4899;
+    }
+
+    .timer-content {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .timer-display {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: #ec4899;
+      margin-bottom: 20px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .timer-controls button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timer-start {
+      background: #10b981;
+      color: white;
+    }
+
+    .timer-pause {
+      background: #f59e0b;
+      color: white;
+    }
+
+    .timer-reset {
+      background: #ef4444;
+      color: white;
+    }
+
+    .timer-presets {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .timer-preset {
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    .timer-preset:hover {
+      background: rgba(236, 72, 153, 0.2);
+      border-color: #ec4899;
+    }
+
+    .timer-preset.active {
+      background: #ec4899;
+      color: white;
+    }
+
+    /* Spotify Player Styles */
+    .spotify-container {
+      margin: 15px 0;
+      padding: 15px;
+      background: rgba(29, 185, 84, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(29, 185, 84, 0.3);
+    }
+
+    .spotify-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .spotify-logo {
+      color: #1DB954;
+      font-size: 1.5rem;
+    }
+
+    .spotify-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .spotify-controls button {
+      padding: 8px 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+
+    .spotify-controls button:hover {
+      background: rgba(29, 185, 84, 0.3);
+    }
+
+    .playlist-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .playlist-item {
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+      font-size: 0.8rem;
+    }
+
+    .playlist-item:hover {
+      background: rgba(29, 185, 84, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .playlist-item.active {
+      background: #1DB954;
+      color: white;
+    }
+
+    .player-container {
+      margin-top: 15px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+
+    .player-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .player-cover {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      background: linear-gradient(to right, #1DB954, #191414);
+    }
+
+    .player-details {
+      flex: 1;
+    }
+
+    .player-title {
+      font-weight: 600;
+      color: white;
+    }
+
+    .player-artist {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .player-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .player-controls button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .player-controls button:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .player-progress {
+      margin-top: 15px;
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 5px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #1DB954;
+      width: 45%;
+    }
+
+    .progress-time {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 850px) { 
+      .grid { grid-template-columns: 1fr; }
+      .chatbot-window {
+        width: calc(100vw - 40px);
+        right: 20px;
+        height: 450px;
+      }
+      .timer-window {
+        width: calc(100vw - 40px);
+        left: 20px;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      .playlist-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    .fade-in { animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      display: none;
+      align-items: center;
+      gap: 12px;
+      z-index: 1001;
+      max-width: 350px;
+    }
+    .notification.success { border-left: 4px solid var(--accent); }
+    .notification.error { border-left: 4px solid var(--danger); }
+    .notification.warning { border-left: 4px solid var(--warning); }
+    .notification.info { border-left: 4px solid var(--primary); }
+
+    .workout-schedule {
+      margin: 15px 0;
+      padding: 15px;
+      background: rgba(168, 85, 247, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    .schedule-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--secondary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .schedule-days {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .day-pill {
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      border: 1px solid var(--glass-border);
+    }
+    .day-pill.active {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .config-progress {
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    .config-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Notification System -->
+  <div id="notification" class="notification">
+    <i id="notificationIcon" class="fas fa-info-circle"></i>
+    <span id="notificationText">Notification message</span>
+  </div>
+
+  <!-- Timer Widget -->
+  <div class="timer-container">
+    <button class="timer-btn" id="timerToggle">
+      <i class="fas fa-clock"></i>
+    </button>
+    
+    <div class="timer-window" id="timerWindow">
+      <div class="timer-header">
+        <h3><i class="fas fa-stopwatch"></i> Workout Timer</h3>
+        <button class="timer-close" id="timerClose">&times;</button>
+      </div>
+      
+      <div class="timer-content">
+        <div class="timer-display" id="timerDisplay">03:00</div>
+        
+        <div class="timer-controls">
+          <button class="timer-start" id="timerStart">
+            <i class="fas fa-play"></i> Start
+          </button>
+          <button class="timer-pause" id="timerPause">
+            <i class="fas fa-pause"></i> Pause
+          </button>
+          <button class="timer-reset" id="timerReset">
+            <i class="fas fa-redo"></i> Reset
+          </button>
+        </div>
+        
+        <div class="timer-presets">
+          <div class="timer-preset" data-time="60">1:00 min</div>
+          <div class="timer-preset" data-time="90">1:30 min</div>
+          <div class="timer-preset" data-time="120">2:00 min</div>
+          <div class="timer-preset" data-time="150">2:30 min</div>
+          <div class="timer-preset active" data-time="180">3:00 min</div>
+          <div class="timer-preset" data-time="45">0:45 sec</div>
+        </div>
+        
+        <div style="margin-top: 15px; font-size: 0.8rem; color: var(--text-muted);">
+          <i class="fas fa-info-circle"></i> Max rest time between sets: 3 minutes
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chatbot Container -->
+<div class="chatbot-container">
+  <button class="chatbot-btn" id="chatbotToggle">
+    <i class="fas fa-dumbbell"></i>
+  </button>
+  
+  <div class="chatbot-window" id="chatbotWindow">
+    <div class="chatbot-header">
+      <h3><i class="fas fa-robot"></i> AI Fitness Assistant</h3>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div class="api-status online" id="chatbotAPIStatus" style="font-size: 0.6rem; padding: 2px 8px;">
+  <i class="fab fa-google"></i> Gemini
+</div>
+        <button class="chatbot-close" id="chatbotClose">&times;</button>
+      </div>
+    </div>
+    
+    <div class="chatbot-messages" id="chatbotMessages">
+      <div class="message bot-message">
+        <strong>FitBot:</strong> Hello! I'm your AI fitness assistant powered by GPT-4. I can help with personalized workout plans, nutrition advice, form corrections, and more! How can I help you today? 💪
+      </div>
+    </div>
+    
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+    
+    <div class="chatbot-input">
+      <input type="text" id="chatbotInput" placeholder="Ask about exercise, nutrition, or fitness..." autocomplete="off">
+      <button id="chatbotSend"><i class="fas fa-paper-plane"></i></button>
+    </div>
+    
+    <div style="padding: 10px 20px; border-top: 1px solid var(--glass-border);">
+      <div style="font-size: 0.7rem; color: var(--text-muted); display: flex; gap: 15px;">
+        <button class="quick-action" onclick="quickAction('workout plan')" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 0.7rem;">
+          <i class="fas fa-dumbbell"></i> Plan
+        </button>
+        <button class="quick-action" onclick="quickAction('nutrition advice')" style="background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.7rem;">
+          <i class="fas fa-utensils"></i> Nutrition
+        </button>
+        <button class="quick-action" onclick="quickAction('form check')" style="background: none; border: none; color: var(--warning); cursor: pointer; font-size: 0.7rem;">
+          <i class="fas fa-check-circle"></i> Form
+        </button>
+      </div>
+    </div>
+    <div id="followUpSuggestions" style="padding: 10px 20px; border-top: 1px solid var(--glass-border); display: none;">
+</div>
+  </div>
+</div>
+  <div class="container">
+    <header>
+      <div class="brand-badge">Elite Protocol v3.5 | AI Enhanced</div>
+      <h1>GYM PLANNER <span class="camtech-text">CAMTECH</span></h1>
+      
+      <div class="preset-row">
+          <button class="preset-btn" onclick="applyPreset('Male', 25, 'Advanced', 'Build muscle', 'Chest')">
+            <i class="fas fa-fire"></i> Pro Bulk
+          </button>
+          <button class="preset-btn" onclick="applyPreset('Female', 24, 'Intermediate', 'Lose fat', 'Full body')">
+            <i class="fas fa-bolt"></i> Shred Mode
+          </button>
+          <button class="preset-btn" onclick="applyPreset('Male', 30, 'New', 'Stay fit', 'Legs')">
+            <i class="fas fa-heart"></i> Daily Health
+          </button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <div class="section-header">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-user-gear"></i>
+            <h2>Configuration</h2>
+          </div>
+          <div id="apiStatus" class="api-status offline">Checking APIs...</div>
+        </div>
+        
+        <div class="form-group">
+          <label>Gender</label>
+          <select id="gender">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Prefer not to say">You are gay</option>
+          </select>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age <span style="color: var(--danger)">*</span></label>
+            <input type="number" id="age" value="25" min="13" max="70" required>
+            <div class="error-message" id="ageError">Age must be between 13-70</div>
+          </div>
+          <div class="form-group">
+            <label>Weight (kg) <span style="color: var(--danger)">*</span></label>
+            <input type="number" id="weight" value="70" min="40" max="200" required>
+            <div class="error-message" id="weightError">Weight must be between 40-200kg</div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Height (cm) <span style="color: var(--danger)">*</span></label>
+            <input type="number" id="height" value="175" min="100" max="250" required>
+            <div class="error-message" id="heightError">Height must be between 100-250cm</div>
+          </div>
+          <div class="form-group">
+            <label>Workouts/Week</label>
+            <select id="workoutsPerWeek">
+              <option value="2">2 days</option>
+              <option value="3" selected>3 days</option>
+              <option value="4">4 days</option>
+              <option value="5">5 days</option>
+              <option value="6">6 days</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Activity Level</label>
+            <select id="activity">
+              <option value="1.2">Sedentary</option>
+              <option value="1.375">Lightly Active</option>
+              <option value="1.55" selected>Moderately Active</option>
+              <option value="1.725">Very Active</option>
+              <option value="1.9">Extremely Active</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Experience</label>
+            <select id="level">
+              <option value="New">New to Gym</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Intensity</label>
+          <select id="intensityMod">
+            <option value="1">Standard</option>
+            <option value="1.2">Hardcore (+20%)</option>
+            <option value="0.8">Recovery (-20%)</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Goal</label>
+          <select id="goal">
+            <option value="Build muscle">Build Muscle</option>
+            <option value="Lose fat">Lose Fat</option>
+            <option value="Stay fit">Stay Fit & Toned</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Focus Area</label>
+          <select id="focus">
+            <option value="Chest">Chest</option>
+            <option value="Back">Back</option>
+            <option value="Legs">Legs</option>
+            <option value="Arms">Arms</option>
+            <option value="Shoulders">Shoulders</option>
+            <option value="Full body">Full Body</option>
+          </select>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-generate" onclick="getRecommendation()">
+            <span id="generateText">GENERATE PROTOCOL</span>
+            <i class="fas fa-bolt"></i>
+          </button>
+          <button id="downloadBtn" class="btn btn-download" onclick="downloadPDF()">
+            DOWNLOAD FULL PDF <i class="fas fa-file-pdf"></i>
+          </button>
+          <button class="btn btn-api" onclick="getLocationForWeather()" id="weatherBtn">
+            <i class="fas fa-cloud-sun"></i> GET WEATHER INFO
+          </button>
+          <button class="btn btn-spotify" onclick="showSpotifyPlayer()" id="spotifyBtn">
+            <i class="fab fa-spotify"></i> SPOTIFY WORKOUT MUSIC
+          </button>
+          <button class="btn btn-timer" onclick="toggleTimer()" id="timerBtn">
+            <i class="fas fa-stopwatch"></i> OPEN WORKOUT TIMER
+          </button>
+        </div>
+
+        <div class="api-loading" id="apiLoading">
+          <i class="fas fa-spinner"></i> Fetching data from APIs...
+        </div>
+
+        <div class="config-progress" style="margin-top: 20px;">
+          <div class="config-fill" id="configProgress" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card" style="min-height: 520px;">
+          <div class="section-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i class="fas fa-clipboard-check"></i>
+              <h2>Personalized Protocol</h2>
+            </div>
+            <button class="btn" style="padding: 8px 16px; font-size: 0.8rem; width: auto;" onclick="refreshAPIData()" id="refreshBtn">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+          
+          <div id="result">
+            <div style="text-align: center; padding-top: 100px; color: var(--text-muted);">
+              <i class="fas fa-dumbbell" style="font-size: 3rem; opacity: 0.1; margin-bottom: 20px;"></i>
+              <p>Configure parameters to see your full routine.</p>
+              <p style="font-size: 0.8rem; margin-top: 10px;">APIs will provide exercise videos & nutrition info</p>
+            </div>
+          </div>
+          <div id="quoteBox" class="quote-box" style="display:none;"></div>
+        </div>
+
+        <div class="stats-bar" id="statsContainer" style="display: none;">
+          <div class="stat-card"><span class="stat-num" id="totalExercises">0</span><span class="stat-lab">Exercises</span></div>
+          <div class="stat-card"><span class="stat-num" id="workoutDuration">0m</span><span class="stat-lab">Duration</span></div>
+          <div class="stat-card"><span class="stat-num" id="intensityLevel">-</span><span class="stat-lab">Intensity</span></div>
+        </div>
+
+        <div class="history-card" id="historyCard">
+          <h3 style="font-size: 0.85rem; color: var(--text-muted);">
+            <i class="fas fa-history"></i> RECENT LOG
+          </h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Goal</th>
+                <th>Focus</th>
+                <th>Level</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+            </div>
+      </div>
+    </div>
+    
+    <!-- ADD FEEDBACK SECTION HERE -->
+    <div class="feedback-section" style="margin-top: 60px; padding-top: 40px; border-top: 1px solid var(--glass-border);">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <div style="background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 32px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+          <div class="section-header" style="border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; margin-bottom: 25px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i class="fas fa-comment-alt" style="color: var(--accent);"></i>
+              <h2 style="margin: 0; font-size: 1.5rem;">Share Your Feedback</h2>
+            </div>
+            <div style="background: rgba(16, 185, 129, 0.2); color: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">
+              <i class="fas fa-heart"></i> We Value You
+            </div>
+          </div>
+          
+          <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 0.95rem; line-height: 1.6;">
+            Help us improve <strong style="color: var(--primary);">GYM PLANNER CAMTECH</strong>! Your feedback is essential for making 
+            our tool better for everyone. Share your experience, suggestions, or report any issues.
+          </p>
+          
+          <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 25px;">
+            <div style="display: flex; align-items: flex-start; gap: 15px; margin-bottom: 15px;">
+              <div style="background: var(--primary); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i class="fas fa-clipboard-list"></i>
+              </div>
+              <div>
+                <h3 style="margin: 0 0 5px 0; color: var(--text-main); font-size: 1.1rem;">Quick Feedback Form</h3>
+                <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">
+                  Takes only 2-3 minutes to complete. Anonymous responses welcome.
+                </p>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+              <!-- PUT YOUR GOOGLE FORM LINK HERE -->
+              <a href="https://forms.gle/gTDc68jrxbr1U3XZ7" 
+                 target="_blank" 
+                 class="btn-feedback"
+                 style="display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(to right, var(--primary), var(--secondary)); color: white; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 1rem; transition: all 0.3s; border: none; cursor: pointer;">
+                <i class="fab fa-google"></i>
+                Open Google Form
+                <i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i>
+              </a>
+              
+              <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 10px;">
+                <i class="fas fa-lock" style="color: var(--accent);"></i> Your responses are secure and confidential
+              </p>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 25px;">
+            <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <i class="fas fa-lightbulb" style="color: var(--warning);"></i>
+                <h4 style="margin: 0; font-size: 0.9rem; color: var(--text-main);">Suggest Features</h4>
+              </div>
+              <p style="color: var(--text-muted); margin: 0; font-size: 0.8rem;">
+                What new features would you like to see?
+              </p>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <i class="fas fa-bug" style="color: var(--danger);"></i>
+                <h4 style="margin: 0; font-size: 0.9rem; color: var(--text-main);">Report Issues</h4>
+              </div>
+              <p style="color: var(--text-muted); margin: 0; font-size: 0.8rem;">
+                Found a bug or something not working right?
+              </p>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <i class="fas fa-star" style="color: var(--accent);"></i>
+                <h4 style="margin: 0; font-size: 0.9rem; color: var(--text-main);">Share Experience</h4>
+              </div>
+              <p style="color: var(--text-muted); margin: 0; font-size: 0.8rem;">
+                How has CAMTECH helped your fitness journey?
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--glass-border); text-align: center;">
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
+              <i class="fas fa-envelope" style="color: var(--primary); margin-right: 5px;"></i>
+              Prefer email? Contact us at: <span style="color: var(--accent);">ILoveyouguysmuahhmuahh@camtechgym.com</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> <!-- This is the closing .container div -->
+
+  <script>
+    // ================ GLOBAL VARIABLES ================
+    let currentProtocolText = "";
+    let currentExercises = [];
+    let currentSchedule = [];
+    let currentNutrition = null;
+    let historyLog = JSON.parse(localStorage.getItem('camtechHistory')) || [];
+    let timerSeconds = 180;
+    let isTimerRunning = false;
+    let timerInterval = null;
+// ================ CHATBOT CONFIGURATION ================
+const CHATBOT_CONFIG = {
+  // Choose ONE API service:
+  useGemini: true, // Set to true for Gemini, false for DeepSeek
+  
+  // Gemini Configuration
+  gemini: {
+    apiKey: 'AIzaSyBYXekk0n1V2Jzz3yP4DRYWREXAgmyDSzQ', // Your actual key
+    model: 'gemini-pro',
+    endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/'
+  },
+  
+  // DeepSeek Configuration
+  deepseek: {
+    apiKey: 'sk-b85d00a7ab7848f38d7535f573d3d6a3', // Your actual key
+    model: 'deepseek-chat',
+    endpoint: 'https://api.deepseek.com/chat/completions'
+  }
+};
+
+// ================ CHATBOT FUNCTIONS ================
+function toggleChatbot() {
+  const window = document.getElementById('chatbotWindow');
+  window.style.display = window.style.display === 'flex' ? 'none' : 'flex';
+  if (window.style.display === 'flex') {
+    document.getElementById('chatbotInput').focus();
+  }
+}
+
+function closeChatbot() {
+  document.getElementById('chatbotWindow').style.display = 'none';
+}
+
+// Send message function
+async function sendChatMessage() {
+  const input = document.getElementById('chatbotInput');
+  const message = input.value.trim();
+  const response = await getProfessionalResponse(message);
+  
+  if (!message) return;
+  
+  // Add user message to UI
+  addUserMessage(message);
+  input.value = '';
+  
+  // Show typing indicator
+  showTypingIndicator();
+  
+  try {
+    // Get AI response
+    const response = awaitgetProfessionalResponse(message);
+    
+    // Add bot response
+    addBotMessage(response);
+  } catch (error) {
+    console.error('Chat error:', error);
+    addBotMessage(getFallbackResponse(message));
+  } finally {
+    hideTypingIndicator();
+  }
+}
+
+
+
+// AI Response handler
+async function getAIResponse(userMessage) {
+  if (CHATBOT_CONFIG.useGemini) {
+    return await getGeminiResponse(userMessage);
+  } else {
+    return await getDeepSeekResponse(userMessage);
+  }
+}
+
+// Gemini API Integration
+async function getGeminiResponse(userMessage) {
+  try {
+    const response = await axios.post(
+      `${CHATBOT_CONFIG.gemini.endpoint}${CHATBOT_CONFIG.gemini.model}:generateContent?key=${CHATBOT_CONFIG.gemini.apiKey}`,
+      {
+        contents: [{
+          parts: [{
+            text: `You are FitBot, an AI fitness assistant. Current user profile: 
+                   Gender: ${document.getElementById('gender')?.value || 'Not specified'}
+                   Age: ${document.getElementById('age')?.value || 'Not specified'}
+                   Goal: ${document.getElementById('goal')?.value || 'Not specified'}
+                   Level: ${document.getElementById('level')?.value || 'Not specified'}
+                   
+                   User's question: ${userMessage}
+                   
+                   Provide detailed, personalized fitness advice. Format with clear sections.`
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 500
+        }
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 10000
+      }
+    );
+    
+    return response.data.candidates[0].content.parts[0].text;
+  } catch (error) {
+    console.error('Gemini API error:', error);
+    throw new Error('Gemini API failed');
+  }
+}
+
+// DeepSeek API Integration
+async function getDeepSeekResponse(userMessage) {
+  try {
+    const response = await axios.post(
+      CHATBOT_CONFIG.deepseek.endpoint,
+      {
+        model: CHATBOT_CONFIG.deepseek.model,
+        messages: [
+          {
+            role: "system",
+            content: "You are FitBot, an AI fitness assistant. Provide detailed, personalized fitness advice."
+          },
+          {
+            role: "user",
+            content: userMessage
+          }
+        ],
+        max_tokens: 500
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${CHATBOT_CONFIG.deepseek.apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 10000
+      }
+    );
+    
+    return response.data.choices[0].message.content;
+  } catch (error) {
+    console.error('DeepSeek API error:', error);
+    throw new Error('DeepSeek API failed');
+  }
+}
+
+// Replace the existing getFallbackResponse function (around line 600)
+function getProfessionalResponse(userMessage) {
+  const msg = userMessage.toLowerCase();
+  
+  // Check professional knowledge base first
+  for (const [topic, data] of Object.entries(PROFESSIONAL_FITNESS_KNOWLEDGE)) {
+    if (data.pattern.test(msg)) {
+      return data.response;
+    }
+  }
+  
+  // Check for specific exercise programming requests
+  if (msg.includes('program') || msg.includes('routine') || msg.includes('split')) {
+    return generateProfessionalProgram();
+  }
+  
+  // Check for nutrition science questions
+  if (msg.includes('macronutrient') || msg.includes('micronutrient') || 
+      msg.includes('supplement') || msg.includes('fasting')) {
+    return generateNutritionScienceResponse(msg);
+  }
+  
+  // Check for biomechanics questions
+  if (msg.includes('biomechanics') || msg.includes('kinematics') || 
+      msg.includes('lever') || msg.includes('torque')) {
+    return generateBiomechanicsResponse(msg);
+  }
+  
+  // Default to evidence-based advice
+  return getEvidenceBasedResponse(msg);
+}
+
+function generateProfessionalProgram() {
+  const level = document.getElementById('level').value;
+  const goal = document.getElementById('goal').value;
+  const frequency = parseInt(document.getElementById('workoutsPerWeek').value) || 3;
+  
+  const programs = {
+    'New': {
+      'Build muscle': `**Novice Linear Progression (Starting Strength Model):**
+      
+📅 **Frequency**: ${frequency}x/week full body
+📊 **Progression**: Add 2.5kg weekly to main lifts
+🔄 **Workout A**:
+- Squat: 3x5
+- Bench Press: 3x5
+- Barbell Row: 3x5
+
+🔄 **Workout B**:
+- Squat: 3x5
+- Overhead Press: 3x5
+- Deadlift: 1x5
+
+💡 **Key Principles**: Master form, linear progression, consistency > complexity`,
+      
+      'Lose fat': `**Novice Body Recomposition Protocol:**
+      
+📅 **Training**: ${frequency}x resistance + 2x LISS cardio
+⚖️ **Nutrition**: 500kcal deficit, 2.2g/kg protein
+🏋️ **Workout Structure**:
+- Compound focus (80% of volume)
+- 8-12 rep range
+- 60-90s rest intervals
+
+📈 **Cardio Protocol**:
+- Post-workout LISS: 20-30min @ 60-70% HRmax
+- NEAT focus: 8k+ steps daily`
+    },
+    // Add more levels and goals...
+  };
+  
+  return programs[level]?.[goal] || getGeneralProgram(level, goal, frequency);
+}
+
+// UI Functions
+function addUserMessage(message) {
+  const messagesContainer = document.getElementById('chatbotMessages');
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'message user-message fade-in';
+  messageDiv.innerHTML = `<strong>You:</strong> ${escapeHtml(message)}`;
+  messagesContainer.appendChild(messageDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function addBotMessage(message) {
+  const messagesContainer = document.getElementById('chatbotMessages');
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'message bot-message fade-in';
+  messageDiv.innerHTML = `<strong>FitBot:</strong> ${escapeHtml(message)}`;
+  messagesContainer.appendChild(messageDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function showTypingIndicator() {
+  document.getElementById('typingIndicator').style.display = 'flex';
+}
+
+function hideTypingIndicator() {
+  document.getElementById('typingIndicator').style.display = 'none';
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Quick actions
+function quickAction(action) {
+  const input = document.getElementById('chatbotInput');
+  const actions = {
+    'workout plan': 'Create a detailed workout plan for my level',
+    'nutrition advice': 'Give me personalized nutrition advice',
+    'form check': 'Check my exercise form for common mistakes'
+  };
+  
+  input.value = actions[action] || action;
+  input.focus();
+}
+
+// Event Listeners Setup
+document.addEventListener('DOMContentLoaded', function() {
+  // Chatbot events
+  document.getElementById('chatbotToggle').addEventListener('click', toggleChatbot);
+  document.getElementById('chatbotClose').addEventListener('click', closeChatbot);
+  document.getElementById('chatbotSend').addEventListener('click', sendChatMessage);
+  document.getElementById('chatbotInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      sendChatMessage();
+    }
+  });
+  
+  // Check API status
+  updateChatbotAPIStatus();
+});
+// Add after line 1000 (in the chatbot section)
+const PROFESSIONAL_FITNESS_KNOWLEDGE = {
+  // Anatomy & Physiology
+  'muscle groups': {
+    pattern: /(muscle group|anatomy|pecs|quads|hamstrings|deltoids|glutes)/i,
+    response: `**Primary Muscle Groups & Functions:**
+    
+✅ **Upper Body:**
+- **Chest (Pectorals)**: Horizontal pushing (bench press, push-ups)
+- **Back (Latissimus/Rhomboids)**: Pulling motions (rows, pull-ups)
+- **Shoulders (Deltoids)**: Overhead pressing, shoulder stability
+- **Arms (Biceps/Triceps)**: Elbow flexion/extension
+
+✅ **Lower Body:**
+- **Quads (Quadriceps)**: Knee extension, squatting
+- **Hamstrings**: Hip extension, knee flexion
+- **Glutes (Gluteus)**: Hip extension, power generation
+- **Calves (Gastrocnemius/Soleus)**: Ankle plantarflexion
+
+💡 **Training Tip**: Balance push/pull ratios (1:1.5 for shoulder health)`
+  },
+  
+  // Progressive Overload Methods
+  'progressive overload': {
+    pattern: /(progressive overload|plateau|stuck|not growing|increase)/i,
+    response: `**Evidence-Based Progressive Overload Methods:**
+    
+📊 **Quantitative Methods:**
+1. **Load Increase**: +2.5-5% weekly (NSCA guidelines)
+2. **Volume Increase**: Add 1-2 sets per exercise weekly
+3. **Density Training**: Same work, less time (-5% rest weekly)
+4. **Frequency**: Add training day for lagging muscles
+
+📈 **Qualitative Methods:**
+1. **Tempo Control**: Eccentric emphasis (3-4s lowering)
+2. **Range of Motion**: Increase depth gradually
+3. **Technique Refinement**: Better mind-muscle connection
+4. **Rest Reduction**: Decrease rest by 5-10 seconds weekly
+
+⚠️ **Avoid**: Increasing >2 variables simultaneously (overtraining risk)`
+  },
+  
+  // Periodization
+  'periodization': {
+    pattern: /(periodization|programming|schedule|weeks|mesocycle)/i,
+    response: `**Periodization Models for Optimal Progress:**
+    
+🔄 **Linear Periodization (Beginners):**
+- Week 1-4: Hypertrophy (12-15 reps)
+- Week 5-8: Strength (6-8 reps)
+- Week 9-12: Power (3-5 reps)
+
+📈 **Undulating Periodization (Intermediate):**
+- Monday: Strength (3-5 reps)
+- Wednesday: Hypertrophy (8-12 reps)
+- Friday: Power/Endurance (15-20 reps)
+
+🎯 **Block Periodization (Advanced):**
+- Accumulation: 4-6 weeks volume focus
+- Intensification: 2-3 weeks intensity focus
+- Realization: 1-2 weeks peak performance
+
+📅 **Deload Every 4-8 Weeks**: Reduce volume by 40-60%`
+  },
+  
+  // Recovery Protocols
+  'recovery': {
+    pattern: /(recovery|sore|DOMS|rest|sleep)/i,
+    response: `**Evidence-Based Recovery Protocol:**
+    
+💤 **Sleep Optimization:**
+- 7-9 hours nightly (REM crucial for GH release)
+- Sleep hygiene: Cool room (18°C), dark, no screens 1h before
+
+🥗 **Nutrition for Recovery:**
+- 0.3g/kg protein post-workout (within 2h window)
+- Creatine monogydrate: 5g daily for ATP regeneration
+- Omega-3s: Reduce inflammation (2g EPA/DHA daily)
+
+🧊 **Active Recovery:**
+- Low-intensity cardio: 20-30min @ 50-60% HRmax
+- Foam rolling: 5-10min targeted areas
+- Dynamic stretching: 10min daily mobility work
+
+⚠️ **Red Flags**: Pain lasting >72h, joint pain (not muscle)`
+  },
+  
+  // Injury Prevention
+  'injury prevention': {
+    pattern: /(injury|pain|hurt|ach|tendonitis|shoulder pain|knee pain)/i,
+    response: `**Injury Prevention Framework:**
+    
+✅ **Prehab Protocol:**
+1. **Shoulders**: Band pull-aparts (2x15 daily), face pulls
+2. **Knees**: Terminal knee extensions, glute activation
+3. **Lower Back**: McGill Big 3 (curl-ups, side planks, bird-dogs)
+4. **Elbows**: Wrist flexion/extension with light resistance
+
+🚫 **Common Form Errors:**
+- **Bench Press**: Flared elbows >90°, no arch
+- **Squats**: Knee valgus, forward lean, poor depth
+- **Deadlifts**: Rounding back, hips rising first
+- **OHP**: Head forward, excessive arch
+
+🩺 **When to See Professional**: Sharp pain, numbness, clicking/locking joints`
+  }
+};
+// Add after line 1100
+function calculateScientificMetrics() {
+  const weight = parseFloat(document.getElementById('weight').value) || 70;
+  const height = parseFloat(document.getElementById('height').value) / 100; // Convert to meters
+  const age = parseFloat(document.getElementById('age').value) || 25;
+  const gender = document.getElementById('gender').value;
+  const bodyFat = estimateBodyFat(); // Would need more inputs
+  
+  return {
+    // Strength Standards (Based on StrengthLevel.com data)
+    strengthStandards: {
+      benchPress: calculateOneRepMax(weight, 'bench'),
+      squat: calculateOneRepMax(weight, 'squat'),
+      deadlift: calculateOneRepMax(weight, 'deadlift'),
+      level: assessStrengthLevel(weight, gender)
+    },
+    
+    // Metabolic Calculations
+    metabolism: {
+      bmr: calculateBMR(weight, height, age, gender),
+      tdee: calculateTDEE(weight, height, age, gender),
+      neat: calculateNEAT(),
+      tef: calculateTEF()
+    },
+    
+    // Training Volume
+    volume: {
+      weeklySets: calculateOptimalVolume(weight, gender),
+      mrv: calculateMRV(), // Maximum Recoverable Volume
+      mev: calculateMEV(), // Minimum Effective Volume
+      mav: calculateMAV()  // Maximum Adaptive Volume
+    }
+  };
+}
+
+function calculateOneRepMax(bodyWeight, lift) {
+  // Brzycki formula: 1RM = w × (36 / (37 - r))
+  // Using typical ratios for estimation
+  const ratios = {
+    'bench': { 'beginner': 0.75, 'intermediate': 1.0, 'advanced': 1.5 },
+    'squat': { 'beginner': 1.0, 'intermediate': 1.5, 'advanced': 2.0 },
+    'deadlift': { 'beginner': 1.25, 'intermediate': 1.75, 'advanced': 2.5 }
+  };
+  
+  const level = document.getElementById('level').value.toLowerCase();
+  const ratio = ratios[lift][level] || ratios[lift]['intermediate'];
+  
+  return Math.round(bodyWeight * ratio);
+}
+
+function assessStrengthLevel(weight, gender) {
+  const bench = calculateOneRepMax(weight, 'bench');
+  const ratios = gender === 'Male' ? 
+    { 'untrained': 0.5, 'novice': 0.75, 'intermediate': 1.0, 'advanced': 1.25, 'elite': 1.5 } :
+    { 'untrained': 0.35, 'novice': 0.5, 'intermediate': 0.75, 'advanced': 1.0, 'elite': 1.25 };
+  
+  const ratio = bench / weight;
+  
+  if (ratio >= ratios.elite) return 'Elite';
+  if (ratio >= ratios.advanced) return 'Advanced';
+  if (ratio >= ratios.intermediate) return 'Intermediate';
+  if (ratio >= ratios.novice) return 'Novice';
+  return 'Untrained';
+}
+function updateChatbotAPIStatus() {
+  const statusElement = document.getElementById('chatbotAPIStatus');
+  if (CHATBOT_CONFIG.useGemini) {
+    statusElement.innerHTML = '<i class="fab fa-google"></i> Gemini';
+  } else {
+    statusElement.innerHTML = '<i class="fas fa-robot"></i> DeepSeek';
+  }
+}
+
+// Enhanced conversation memory
+let chatHistory = [];
+const MAX_HISTORY = 30;
+
+// User preferences and context
+let userPreferences = {
+  fitnessLevel: '',
+  injuries: [],
+  equipment: ['gym'], // Default assumption
+  timeAvailability: 60,
+  dietaryRestrictions: []
+};
+
+// Exercise database for fallback
+const EXERCISE_DATABASE = {
+  beginner: {
+    chest: ['Push-ups (knee-assisted)', 'Incline Push-ups', 'Wall Push-ups', 'Dumbbell Chest Press (light)'],
+    back: ['Assisted Pull-ups', 'Inverted Rows', 'Lat Pulldowns (light)', 'Face Pulls'],
+    legs: ['Bodyweight Squats', 'Goblet Squats (light)', 'Lunges', 'Glute Bridges'],
+    arms: ['Tricep Dips (chair)', 'Bicep Curls (light)', 'Hammer Curls', 'Overhead Tricep Extension'],
+    shoulders: ['Dumbbell Shoulder Press (light)', 'Lateral Raises (light)', 'Front Raises', 'Band Pull-aparts'],
+    core: ['Plank (knee)', 'Dead Bug', 'Bird-Dog', 'Russian Twists (light)']
+  },
+  intermediate: {
+    chest: ['Bench Press', 'Incline Dumbbell Press', 'Push-ups', 'Cable Flyes', 'Dips'],
+    back: ['Pull-ups', 'Bent Over Rows', 'Seated Rows', 'Lat Pulldowns', 'Face Pulls'],
+    legs: ['Barbell Squats', 'Romanian Deadlifts', 'Leg Press', 'Lunges', 'Calf Raises'],
+    arms: ['Barbell Curls', 'Skull Crushers', 'Preacher Curls', 'Tricep Pushdowns', 'Hammer Curls'],
+    shoulders: ['Overhead Press', 'Arnold Press', 'Lateral Raises', 'Front Raises', 'Reverse Flyes'],
+    core: ['Plank', 'Side Plank', 'Hanging Leg Raises', 'Ab Wheel', 'Cable Crunches']
+  },
+  advanced: {
+    chest: ['Decline Bench Press', 'Weighted Dips', 'Incline Flyes', 'Cable Crossovers', 'Plyo Push-ups'],
+    back: ['Weighted Pull-ups', 'Pendlay Rows', 'T-Bar Rows', 'Rack Pulls', 'One-arm Rows'],
+    legs: ['Front Squats', 'Sumo Deadlifts', 'Bulgarian Split Squats', 'Hack Squats', 'Box Jumps'],
+    arms: ['Spider Curls', 'Close-grip Bench Press', 'Zottman Curls', 'Tricep Rope Pushdowns', 'Concentration Curls'],
+    shoulders: ['Push Press', 'Behind-the-neck Press', 'Upright Rows', 'Lateral Raise Drop Sets', 'Face Pulls (heavy)'],
+    core: ['Dragon Flags', 'L-sits', 'Weighted Planks', 'Windshield Wipers', 'Hanging Leg Circles']
+  }
+};
+
+// Advanced fallback knowledge base
+const FITNESS_KNOWLEDGE_BASE = {
+  // Workout Planning
+  'split routines': {
+    question: /(split|routine|schedule|days per week)/i,
+    response: `Based on your ${document.getElementById('workoutsPerWeek')?.value || '3'} days/week preference:\n\n**PUSH-PULL-LEGS (3 days):**\n- Day 1 (Push): Chest, Shoulders, Triceps\n- Day 2 (Pull): Back, Biceps, Rear Delts\n- Day 3 (Legs): Quads, Hamstrings, Glutes, Calves\n\n**UPPER-LOWER (4 days):**\n- Day 1: Upper (Strength)\n- Day 2: Lower (Strength)\n- Day 3: Upper (Hypertrophy)\n- Day 4: Lower (Hypertrophy)\n\n**BRO SPLIT (5-6 days):**\n- Day 1: Chest\n- Day 2: Back\n- Day 3: Shoulders\n- Day 4: Arms\n- Day 5: Legs\n- Day 6: Weak Points/Cardio`
+  },
+  
+  // Nutrition
+  'macros calculation': {
+    question: /(macros|protein|carbs|fat|nutrition)/i,
+    response: function() {
+      const weight = document.getElementById('weight')?.value || 70;
+      const goal = document.getElementById('goal')?.value || 'Build muscle';
+      
+      let protein, carbs, fat;
+      
+      switch(goal) {
+        case 'Build muscle':
+          protein = weight * 2.2;
+          carbs = weight * 4;
+          fat = weight * 0.8;
+          break;
+        case 'Lose fat':
+          protein = weight * 2.4;
+          carbs = weight * 2;
+          fat = weight * 0.7;
+          break;
+        default:
+          protein = weight * 1.8;
+          carbs = weight * 3;
+          fat = weight * 0.8;
+      }
+      
+      return `**Daily Macros for ${goal} (${weight}kg):**\n\n🍗 Protein: ${Math.round(protein)}g (${Math.round(protein * 4)} cal)\n🍞 Carbs: ${Math.round(carbs)}g (${Math.round(carbs * 4)} cal)\n🥑 Fat: ${Math.round(fat)}g (${Math.round(fat * 9)} cal)\n\n**Total:** ${Math.round(protein * 4 + carbs * 4 + fat * 9)} calories\n\n💡 Adjust based on progress every 2 weeks!`
+    }
+  },
+  
+  // Form Tips
+  'proper form': {
+    question: /(form|technique|proper|how to|correct)/i,
+    response: `**GOLDEN RULES OF FORM:**\n\n1. **NEVER sacrifice form for weight**\n2. **Control the eccentric** (lowering phase) - 3 seconds\n3. **Explosive concentric** (lifting phase)\n4. **Full range of motion** (ROM)\n5. **Mind-muscle connection** - feel the target muscle\n6. **Brace your core** - inhale before rep, exhale during exertion\n7. **Joint alignment** - knees over toes, neutral spine\n\n📹 Use the exercise videos in your generated plan!`
+  },
+  
+  // Progressive Overload
+  'progressive overload': {
+    question: /(progress|plateau|increase|overload|stronger)/i,
+    response: `**PROGRESSIVE OVERLOAD METHODS:**\n\n1. **Increase Weight** (+2.5-5% weekly)\n2. **Increase Reps** (add 1-2 reps per set)\n3. **Increase Sets** (add 1 set per exercise)\n4. **Increase Frequency** (add workout day)\n5. **Decrease Rest Time** (reduce 5-10 seconds)\n6. **Increase Time Under Tension** (slower reps)\n7. **Improve Form** (better mind-muscle connection)\n\n📈 Track everything in the app's history log!`
+  },
+  
+  // Injury Prevention
+  'injury prevention': {
+    question: /(injury|pain|hurt|recovery|rest)/i,
+    response: `**INJURY PREVENTION PROTOCOL:**\n\n✅ **DO:**\n- Dynamic warmup (10 min)\n- Proper form ALWAYS\n- Deload week every 8 weeks\n- Listen to pain signals\n- Sleep 7-9 hours\n- Hydrate properly\n\n❌ **DON'T:**\n- Train through sharp pain\n- Skip warmup/cooldown\n- Increase weight too fast\n- Ignore mobility work\n- Sacrifice form for ego\n\n🩹 For specific pains, describe location and type!`
+  }
+};
+
+// Advanced response caching
+const responseCache = new Map();
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+
+async function getAIResponse(userMessage) {
+  try {
+    // Add user message to history
+    chatHistory.push({
+      role: "user",
+      content: userMessage
+    });
+
+    // Keep history manageable (last 20 messages)
+    if (chatHistory.length > 20) {
+      chatHistory = [chatHistory[0], ...chatHistory.slice(-19)];
+    }
+
+    const response = await axios.post(
+      AI_CONFIG.endpoint,
+      {
+        model: AI_CONFIG.model,
+        messages: chatHistory,
+        max_tokens: AI_CONFIG.maxTokens,
+        temperature: AI_CONFIG.temperature,
+        stream: false
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${AI_CONFIG.apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000 // 30 second timeout
+      }
+    );
+
+    const aiMessage = response.data.choices[0].message.content;
+    
+    // Add AI response to history
+    chatHistory.push({
+      role: "assistant",
+      content: aiMessage
+    });
+
+    return aiMessage;
+
+  } catch (error) {
+    console.error('OpenAI API error:', error.response?.data || error.message);
+    
+    // Fallback responses if API fails
+    return getFallbackResponse(userMessage);
+  }
+}
+
+function getFallbackResponse(userMessage) {
+  const message = userMessage.toLowerCase();
+  
+  // Check for common fitness topics
+  if (message.includes('workout') || message.includes('routine') || message.includes('exercise')) {
+    return `Based on your profile (${document.getElementById('goal')?.value || 'general fitness'}), I recommend focusing on compound exercises. Try: 3 sets of 8-12 reps for strength, or 4 sets of 12-15 reps for hypertrophy. Always maintain proper form! 💪`;
+  }
+  
+  if (message.includes('nutrition') || message.includes('diet') || message.includes('protein')) {
+    return `For ${document.getElementById('goal')?.value || 'fitness goals'}, aim for balanced nutrition: Protein for muscle repair, carbs for energy, healthy fats for hormones. Use the nutrition calculator above for personalized targets! 🍗`;
+  }
+  
+  if (message.includes('form') || message.includes('technique') || message.includes('proper')) {
+    return `Always prioritize form over weight! Key tips: 1) Keep core tight, 2) Control the movement, 3) Full range of motion, 4) Breathe properly (exhale on exertion). Watch YouTube tutorials for specific exercises! 📹`;
+  }
+  
+  if (message.includes('cardio') || message.includes('hiit') || message.includes('running')) {
+    return `For cardio, try: 20-30 min moderate steady state OR 15-20 min HIIT (30s max effort, 30s rest). Cardio boosts heart health and aids fat loss when combined with strength training! 🏃‍♂️`;
+  }
+  
+  if (message.includes('rest') || message.includes('recovery') || message.includes('sleep')) {
+    return `Recovery is crucial! Aim for 7-9 hours sleep, eat protein post-workout, stretch daily, and take 1-2 full rest days per week. Your muscles grow during rest, not during workouts! 😴`;
+  }
+  
+  if (message.includes('beginner') || message.includes('start') || message.includes('new')) {
+    return `Welcome to fitness! Start with 2-3 full body workouts weekly. Focus on basics: squats, push-ups, rows, planks. Progress slowly and celebrate small wins! You've got this! 🌟`;
+  }
+  
+  // Default motivational response
+  const responses = [
+    "Consistency beats intensity! Focus on showing up regularly rather than occasional intense workouts. 💪",
+    "Remember: fitness is a journey, not a destination. Enjoy the process and celebrate progress! 🏆",
+    "Every workout counts! Even a short session is better than no session. Keep moving forward! 🔥",
+    "Listen to your body - it knows best. Rest when needed, push when you can. You're doing great! 🌈"
+  ];
+  
+  return responses[Math.floor(Math.random() * responses.length)];
+}
+
+function quickAction(action) {
+  const input = document.getElementById('chatbotInput');
+  
+  // Enhanced quick actions with context
+  const actions = {
+    'workout plan': `Create a detailed ${document.getElementById('workoutsPerWeek')?.value || '3'}-day ${document.getElementById('focus')?.value || 'Full Body'} workout plan for ${document.getElementById('goal')?.value || 'building muscle'}. Include sets, reps, rest times, and progression.`,
+    'nutrition advice': `Provide detailed nutrition plan for ${document.getElementById('goal')?.value || 'building muscle'}. I'm ${document.getElementById('weight')?.value || '70'}kg, ${document.getElementById('height')?.value || '175'}cm, ${document.getElementById('age')?.value || '25'} years old. Include macros, meal timing, and supplement recommendations.`,
+    'form check': `Give detailed form breakdown for ${document.getElementById('focus')?.value || 'chest'} exercises. I'm ${document.getElementById('level')?.value || 'Intermediate'} level. Include common mistakes and corrections.`,
+    'injury prevention': `Create injury prevention protocol for ${document.getElementById('focus')?.value || 'full body'} training. I'm ${document.getElementById('level')?.value || 'Intermediate'} level. Include warmup, cooldown, and recovery strategies.`,
+    'progressive overload': `Design 8-week progressive overload schedule for ${document.getElementById('focus')?.value || 'chest'}. I'm ${document.getElementById('level')?.value || 'Intermediate'} level with goal of ${document.getElementById('goal')?.value || 'building muscle'}.`
+  };
+  
+  const message = actions[action] || `Give me advice about ${action}`;
+  
+  input.value = message;
+  input.focus();
+  
+  // Auto-send for quick actions
+  setTimeout(() => {
+    sendChatMessage();
+  }, 100);
+}
+
+async function sendChatMessage() {
+  const input = document.getElementById('chatbotInput');
+  const message = input.value.trim();
+  
+  if (!message) return;
+  
+  // Clear input and show typing
+  input.value = '';
+  showTypingIndicator();
+  
+  try {
+    // Add user message to UI
+    const userMessageId = addUserMessage(message);
+    
+    // Try to get cached response
+    const cachedResponse = getCachedResponse(message);
+    if (cachedResponse) {
+      setTimeout(() => {
+        hideTypingIndicator();
+        addBotMessage(cachedResponse, userMessageId);
+      }, 500);
+      return;
+    }
+    
+    // Get GEMINI AI response with timeout
+    const response = await Promise.race([
+      getGeminiAIResponse(message),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000))
+    ]);
+    
+    hideTypingIndicator();
+    
+    // Cache the response
+    cacheResponse(message, response);
+    
+    // Add bot response
+    addBotMessage(response, userMessageId);
+    
+    // Auto-suggest follow-ups for certain topics
+    suggestFollowUpQuestions(message, response);
+    
+  } catch (error) {
+    hideTypingIndicator();
+    
+    // Enhanced error handling with fallback
+    const fallbackResponse = getEnhancedFallbackResponse(message);
+    addBotMessage(fallbackResponse);
+    
+    console.error('Chat error:', error.message);
+    
+    // If API key issue, show setup prompt
+    if (error.message.includes('API key') || GEMINI_CONFIG.apiKey === 'YOUR_GEMINI_API_KEY_HERE') {
+      showGeminiAPIKeyPrompt();
+    }
+  }
+}
+
+function addUserMessage(message) {
+  const messagesContainer = document.getElementById('chatbotMessages');
+  const messageId = 'msg-' + Date.now();
+  
+  const messageDiv = document.createElement('div');
+  messageDiv.id = messageId;
+  messageDiv.className = 'message user-message fade-in';
+  messageDiv.innerHTML = `
+    <div style="display: flex; align-items: flex-start; gap: 10px;">
+      <div style="width: 30px; height: 30px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <i class="fas fa-user" style="font-size: 0.8rem;"></i>
+      </div>
+      <div style="flex: 1;">
+        <div style="font-weight: 600; color: var(--accent); margin-bottom: 5px;">You</div>
+        <div>${escapeHtml(message)}</div>
+      </div>
+    </div>
+  `;
+  
+  messagesContainer.appendChild(messageDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  
+  return messageId;
+}
+
+function addBotMessage(response, replyToId = null) {
+  const messagesContainer = document.getElementById('chatbotMessages');
+  
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'message bot-message fade-in';
+  
+  // Add reply reference if available
+  if (replyToId) {
+    messageDiv.setAttribute('data-reply-to', replyToId);
+  }
+  
+  // Format the response
+  const formattedResponse = formatEnhancedAIMessage(response);
+  
+  messageDiv.innerHTML = `
+    <div style="display: flex; align-items: flex-start; gap: 10px;">
+      <div style="width: 30px; height: 30px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <i class="fas fa-robot" style="font-size: 0.8rem;"></i>
+      </div>
+      <div style="flex: 1;">
+        <div style="font-weight: 600; color: var(--primary); margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
+          <span>FitBot AI</span>
+          <button class="copy-btn" onclick="copyMessage(this)" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.8rem;">
+            <i class="far fa-copy"></i>
+          </button>
+        </div>
+        <div class="bot-message-content">${formattedResponse}</div>
+        <div style="margin-top: 10px; font-size: 0.7rem; color: var(--text-muted); display: flex; gap: 15px;">
+          <button onclick="rateResponse(this, 'helpful')" style="background: none; border: none; color: var(--accent); cursor: pointer; display: flex; align-items: center; gap: 5px;">
+            <i class="far fa-thumbs-up"></i> Helpful
+          </button>
+          <button onclick="rateResponse(this, 'not-helpful')" style="background: none; border: none; color: var(--danger); cursor: pointer; display: flex; align-items: center; gap: 5px;">
+            <i class="far fa-thumbs-down"></i> Not Helpful
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  messagesContainer.appendChild(messageDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  
+  // Highlight exercise mentions
+  highlightExerciseMentions(messageDiv);
+}
+
+function formatEnhancedAIMessage(message) {
+  // Enhanced markdown formatting with fitness-specific styling
+  return message
+    .replace(/^# (.*$)/gm, '<h4 style="color: var(--primary); margin: 15px 0 10px 0; font-size: 1.1rem;">$1</h4>')
+    .replace(/^## (.*$)/gm, '<h5 style="color: var(--accent); margin: 12px 0 8px 0; font-size: 1rem;">$1</h5>')
+    .replace(/^### (.*$)/gm, '<h6 style="color: var(--secondary); margin: 10px 0 6px 0; font-size: 0.95rem;">$1</h6>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--warning);">$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace;">$1</code>')
+    .replace(/- (.*?)(?=\n|$)/g, '<li style="margin: 5px 0; padding-left: 5px;">$1</li>')
+    .replace(/(\d+\.) (.*?)(?=\n|$)/g, '<li style="margin: 5px 0; padding-left: 5px;">$2</li>')
+    .replace(/(✅|✔️|✓) (.*?)(?=\n|$)/g, '<div style="color: var(--accent); margin: 5px 0;"><i class="fas fa-check"></i> $2</div>')
+    .replace(/(❌|✖️|⚠️) (.*?)(?=\n|$)/g, '<div style="color: var(--danger); margin: 5px 0;"><i class="fas fa-times"></i> $2</div>')
+    .replace(/(💡|💭) (.*?)(?=\n|$)/g, '<div style="color: var(--warning); margin: 5px 0;"><i class="fas fa-lightbulb"></i> $2</div>')
+    .replace(/\n\n/g, '</p><p style="margin: 10px 0;">')
+    .replace(/\n/g, '<br>')
+    .replace(/<li/g, '<li style="margin-left: 20px;"')
+    .replace(/<\/?ul>/g, '')
+    .replace(/<\/?ol>/g, '')
+    .replace(/^<p/, '<p style="margin: 0 0 10px 0;"')
+    .replace(/\[Exercise:(.*?)\]/g, '<span class="exercise-mention" style="color: var(--primary); font-weight: 600; cursor: pointer;" onclick="showExerciseDemo(\'$1\')">$1</span>')
+    .replace(/\[Timer:(.*?)\]/g, '<span class="timer-mention" style="color: var(--secondary); font-weight: 600; cursor: pointer;" onclick="setTimerFromChat(\'$1\')">$1</span>');
+}
+
+// Gemini AI response function
+async function getGeminiAIResponse(userMessage) {
+  // Update system prompt with current user data
+  const systemPrompt = GEMINI_CONFIG.getSystemPrompt();
+  
+  // Build conversation history for context
+  const conversationHistory = chatHistory.slice(-6).map(msg => ({
+    role: msg.role === 'user' ? 'user' : 'model',
+    parts: [{ text: msg.content }]
+  }));
+  
+  // Update chat history
+  chatHistory.push({ role: "user", content: userMessage });
+  
+  try {
+    const fullUrl = `${GEMINI_CONFIG.endpoint}${GEMINI_CONFIG.model}:generateContent?key=${GEMINI_CONFIG.apiKey}`;
+    
+    const requestBody = {
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: `${systemPrompt}\n\nCurrent conversation context:\n${conversationHistory.map(msg => `${msg.role}: ${msg.parts[0].text}`).join('\n')}\n\nUser message: ${userMessage}` }]
+        }
+      ],
+      generationConfig: {
+        temperature: GEMINI_CONFIG.temperature,
+        topK: GEMINI_CONFIG.topK,
+        topP: GEMINI_CONFIG.topP,
+        maxOutputTokens: GEMINI_CONFIG.maxTokens,
+        stopSequences: []
+      },
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_HARASSMENT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          category: "HARM_CATEGORY_HATE_SPEECH",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        },
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_MEDIUM_AND_ABOVE"
+        }
+      ]
+    };
+    
+    const response = await axios.post(fullUrl, requestBody, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      timeout: 20000
+    });
+    
+    if (response.data && response.data.candidates && response.data.candidates[0]) {
+      const aiMessage = response.data.candidates[0].content.parts[0].text;
+      
+      // Update chat history
+      chatHistory.push({ role: "assistant", content: aiMessage });
+      
+      // Keep history within limit
+      if (chatHistory.length > MAX_HISTORY) {
+        chatHistory = chatHistory.slice(-MAX_HISTORY);
+      }
+      
+      return aiMessage;
+    } else {
+      throw new Error('No response from Gemini API');
+    }
+    
+  } catch (error) {
+    console.error('Gemini API error:', error.response?.data || error.message);
+    
+    // Check for specific Gemini errors
+    if (error.response?.data?.error?.message?.includes('API key')) {
+      throw new Error('Invalid or missing Gemini API key');
+    }
+    
+    throw error;
+  }
+}
+
+// Enhanced fallback response system
+function getEnhancedFallbackResponse(userMessage) {
+  const message = userMessage.toLowerCase();
+  
+  // Check knowledge base
+  for (const [key, knowledge] of Object.entries(FITNESS_KNOWLEDGE_BASE)) {
+    if (knowledge.question.test(message)) {
+      return typeof knowledge.response === 'function' 
+        ? knowledge.response() 
+        : knowledge.response;
+    }
+  }
+  
+  // Check for specific exercise queries
+  const exerciseMatch = message.match(/(squat|bench|deadlift|pull.?up|push.?up|row|lunge|curl|press)/i);
+  if (exerciseMatch) {
+    const exercise = exerciseMatch[0];
+    const level = document.getElementById('level')?.value?.toLowerCase() || 'intermediate';
+    const focus = document.getElementById('focus')?.value?.toLowerCase() || 'full body';
+    
+    return generateExerciseInstruction(exercise, level, focus);
+  }
+  
+  // Personalized responses based on user profile
+  const goal = document.getElementById('goal')?.value || 'Build muscle';
+  const level = document.getElementById('level')?.value || 'Intermediate';
+  
+  const personalizedResponses = {
+    'Build muscle': [
+      `For muscle growth, focus on 8-12 reps with 60-90s rest. Progressive overload is key - try increasing weight by 2.5% weekly! 💪`,
+      `Hypertrophy requires volume! Aim for 10-20 sets per muscle group per week. Use the timer for precise rest periods.`,
+      `Muscle building nutrition: ${calculateProtein()}g protein daily, slight calorie surplus (200-300 above maintenance).`
+    ],
+    'Lose fat': [
+      `Fat loss = calorie deficit + resistance training. Maintain protein high (${calculateProtein()}g) to preserve muscle.`,
+      `HIIT protocols: 30s max effort, 90s rest x 8 rounds. Use the timer widget for perfect intervals!`,
+      `Cardio timing: 20-40min steady state post-workout OR fasted morning cardio.`
+    ],
+    'Stay fit': [
+      `Maintenance phase: Keep protein at ${calculateProtein()}g, focus on consistency and recovery.`,
+      `Functional fitness: Include mobility work 3x/week. Try yoga flows on rest days.`,
+      `Balance is key: 3 strength sessions, 2 cardio, 2 active recovery days weekly.`
+    ]
+  };
+  
+  const responses = personalizedResponses[goal] || [
+    "I'd love to help! Could you tell me more about your specific fitness question?",
+    "For personalized advice, make sure you've filled out your profile in the main form!",
+    "Try using the quick action buttons for workout plans, nutrition, or form checks!"
+  ];
+  
+  return responses[Math.floor(Math.random() * responses.length)];
+}
+
+function calculateProtein() {
+  const weight = document.getElementById('weight')?.value || 70;
+  const goal = document.getElementById('goal')?.value;
+  
+  switch(goal) {
+    case 'Build muscle': return Math.round(weight * 2.2);
+    case 'Lose fat': return Math.round(weight * 2.4);
+    default: return Math.round(weight * 1.8);
+  }
+}
+
+function generateExerciseInstruction(exercise, level, focus) {
+  const exercises = EXERCISE_DATABASE[level]?.[focus] || EXERCISE_DATABASE.intermediate.fullBody;
+  
+  return `**${exercise.toUpperCase()} - ${level.toUpperCase()} PROTOCOL**\n\n` +
+         `🔹 Sets: ${level === 'beginner' ? '3' : level === 'intermediate' ? '4' : '5'}\n` +
+         `🔹 Reps: ${level === 'beginner' ? '10-15' : level === 'intermediate' ? '8-12' : '6-10'}\n` +
+         `🔹 Rest: ${level === 'beginner' ? '90s' : level === 'intermediate' ? '75s' : '60s'}\n` +
+         `🔹 Tempo: 2-1-3 (2s concentric, 1s pause, 3s eccentric)\n\n` +
+         `💡 FORM TIPS:\n` +
+         `- Keep core braced\n` +
+         `- Full range of motion\n` +
+         `- Control the descent\n` +
+         `- Exhale on exertion\n\n` +
+         `[Timer:${level === 'beginner' ? '90' : level === 'intermediate' ? '75' : '60'}s] for rest periods`;
+}
+
+// Caching functions
+function getCachedResponse(message) {
+  const cacheKey = message.toLowerCase().trim();
+  const cached = responseCache.get(cacheKey);
+  
+  if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+    return cached.response;
+  }
+  
+  return null;
+}
+
+function cacheResponse(message, response) {
+  const cacheKey = message.toLowerCase().trim();
+  responseCache.set(cacheKey, {
+    response: response,
+    timestamp: Date.now()
+  });
+  
+  // Limit cache size
+  if (responseCache.size > 100) {
+    const firstKey = responseCache.keys().next().value;
+    responseCache.delete(firstKey);
+  }
+}
+
+// Helper functions
+function suggestFollowUpQuestions(userMessage, response) {
+  const suggestions = document.getElementById('followUpSuggestions');
+  if (!suggestions) return;
+  
+  suggestions.innerHTML = '';
+  
+  const message = userMessage.toLowerCase();
+  
+  if (message.includes('workout') || message.includes('routine')) {
+    suggestions.innerHTML = `
+      <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">Follow-up questions:</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <button class="follow-up-btn" onclick="quickAction('add cardio to this plan')">Add cardio</button>
+        <button class="follow-up-btn" onclick="quickAction('modify for home workout')">Home version</button>
+        <button class="follow-up-btn" onclick="quickAction('progressive overload schedule')">Progression</button>
+      </div>
+    `;
+  }
+}
+
+function copyMessage(button) {
+  const messageContent = button.closest('.message').querySelector('.bot-message-content');
+  const text = messageContent.innerText;
+  
+  navigator.clipboard.writeText(text).then(() => {
+    button.innerHTML = '<i class="fas fa-check"></i>';
+    setTimeout(() => {
+      button.innerHTML = '<i class="far fa-copy"></i>';
+    }, 2000);
+  });
+}
+
+function rateResponse(button, rating) {
+  const message = button.closest('.message');
+  
+  if (rating === 'helpful') {
+    button.innerHTML = '<i class="fas fa-thumbs-up"></i> Thanks!';
+    button.style.color = 'var(--accent)';
+  } else {
+    button.innerHTML = '<i class="fas fa-thumbs-down"></i> Noted';
+    button.style.color = 'var(--danger)';
+  }
+  
+  // Disable both buttons
+  message.querySelectorAll('button').forEach(btn => {
+    btn.disabled = true;
+  });
+}
+
+function highlightExerciseMentions(messageDiv) {
+  const content = messageDiv.querySelector('.bot-message-content');
+  const exercises = Object.values(EXERCISE_DATABASE).flatMap(level => 
+    Object.values(level).flat()
+  );
+  
+  exercises.forEach(exercise => {
+    const regex = new RegExp(`\\b${exercise}\\b`, 'gi');
+    content.innerHTML = content.innerHTML.replace(regex, 
+      `<span class="exercise-highlight" style="background: rgba(99, 102, 241, 0.2); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(99, 102, 241, 0.3);">$&</span>`
+    );
+  });
+}
+
+function showExerciseDemo(exerciseName) {
+  showNotification(`Searching for ${exerciseName} tutorial...`, 'info');
+  const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(exerciseName + ' proper form tutorial')}`;
+  window.open(searchUrl, '_blank');
+}
+
+function setTimerFromChat(timeStr) {
+  let seconds = 60;
+  
+  if (timeStr.includes('s')) {
+    seconds = parseInt(timeStr);
+  } else if (timeStr.includes(':')) {
+    const [min, sec] = timeStr.split(':').map(Number);
+    seconds = min * 60 + sec;
+  }
+  
+  setTimerPreset(seconds);
+  toggleTimer();
+  showNotification(`Timer set to ${timeStr} from chat suggestion`, 'success');
+}
+
+function showGeminiAPIKeyPrompt() {
+  const messagesContainer = document.getElementById('chatbotMessages');
+  
+  const promptDiv = document.createElement('div');
+  promptDiv.className = 'message bot-message fade-in';
+  promptDiv.innerHTML = `
+    <div style="background: rgba(66, 133, 244, 0.1); border: 1px solid rgba(66, 133, 244, 0.3); border-radius: 12px; padding: 15px; margin-top: 10px;">
+      <h4 style="color: #4285f4; margin: 0 0 10px 0; font-size: 0.9rem;">
+        <i class="fab fa-google"></i> Gemini API Key Required
+      </h4>
+      <p style="font-size: 0.85rem; margin: 0 0 10px 0; color: var(--text-main);">
+        For full AI features, please add your Google Gemini API key:
+      </p>
+      <div style="margin-bottom: 10px;">
+        <a href="https://makersuite.google.com/app/apikey" target="_blank" style="color: #4285f4; font-size: 0.8rem; text-decoration: none;">
+          <i class="fas fa-external-link-alt"></i> Get free API key from Google AI Studio
+        </a>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy..." style="flex: 1; padding: 8px 12px; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); border-radius: 8px; color: white; font-size: 0.8rem;">
+        <button onclick="saveGeminiAPIKey()" style="padding: 8px 16px; background: #4285f4; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 0.8rem; font-weight: 600;">
+          Save Key
+        </button>
+      </div>
+      <p style="font-size: 0.75rem; color: var(--text-muted); margin: 10px 0 0 0;">
+        <i class="fas fa-lock"></i> Key is stored locally in your browser
+      </p>
+    </div>
+  `;
+  
+  messagesContainer.appendChild(promptDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+function saveGeminiAPIKey() {
+  const input = document.getElementById('geminiApiKeyInput');
+  const key = input.value.trim();
+  
+  // Validate Gemini API key format
+  if (key && key.startsWith('AIza')) {
+    localStorage.setItem('camtech_gemini_key', key);
+    GEMINI_CONFIG.apiKey = key;
+    input.value = '';
+    
+    const messagesContainer = document.getElementById('chatbotMessages');
+    const successDiv = document.createElement('div');
+    successDiv.className = 'message bot-message fade-in';
+    successDiv.innerHTML = `
+      <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 15px;">
+        <p style="color: var(--accent); margin: 0; font-size: 0.85rem;">
+          <i class="fas fa-check-circle"></i> Gemini API key saved! Full AI features are now enabled.
+        </p>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin: 5px 0 0 0;">
+          Powered by Google Gemini Pro
+        </p>
+      </div>
+    `;
+    
+    messagesContainer.appendChild(successDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // Update API status badge
+    document.getElementById('chatbotAPIStatus').innerHTML = `
+      <i class="fab fa-google"></i> Gemini Pro
+    `;
+    
+  } else {
+    showNotification('Please enter a valid Gemini API key (starts with AIza...)', 'error');
+  }
+}
+function saveAPIKey() {
+  const input = document.getElementById('apiKeyInput');
+  const key = input.value.trim();
+  
+  if (key && key.startsWith('sk-')) {
+    localStorage.setItem('camtech_openai_key', key);
+    AI_CONFIG.apiKey = key;
+    input.value = '';
+    
+    const messagesContainer = document.getElementById('chatbotMessages');
+    const successDiv = document.createElement('div');
+    successDiv.className = 'message bot-message fade-in';
+    successDiv.innerHTML = `
+      <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 15px;">
+        <p style="color: var(--accent); margin: 0; font-size: 0.85rem;">
+          <i class="fas fa-check-circle"></i> API key saved! Full AI features are now enabled.
+        </p>
+      </div>
+    `;
+    
+    messagesContainer.appendChild(successDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  } else {
+    showNotification('Please enter a valid OpenAI API key', 'error');
+  }
+}
+
+// Updated addChatMessage function
+function addChatMessage(message, isUser = false) {
+  const messagesContainer = document.getElementById('chatbotMessages');
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'} fade-in`;
+  
+  if (isUser) {
+    messageDiv.innerHTML = `<strong>You:</strong> ${escapeHtml(message)}`;
+  } else {
+    // Format AI response with markdown-like styling
+    const formattedMessage = formatAIMessage(message);
+    messageDiv.innerHTML = `<strong>FitBot:</strong> ${formattedMessage}`;
+  }
+  
+  messagesContainer.appendChild(messageDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+// Replace the existing formatAIMessage function
+function formatProfessionalMessage(message) {
+  // Add scientific citations where appropriate
+  let formatted = message
+    .replace(/\[Study:([^\]]+)\]/g, '<sup style="color: var(--accent); cursor: help;" title="$1">[📚]</sup>')
+    .replace(/\[Citation:([^\]]+)\]/g, '<sub style="color: var(--text-muted);">($1)</sub>');
+  
+  // Add professional sections
+  formatted = formatted
+    .replace(/^## Evidence-Based:/gm, '<div class="evidence-section" style="background: rgba(16, 185, 129, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 4px solid var(--accent);"><h4 style="color: var(--accent); margin-top: 0;"><i class="fas fa-flask"></i> Evidence-Based:</h4>')
+    .replace(/^## Practical Application:/gm, '</div><div class="practical-section" style="background: rgba(99, 102, 241, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 4px solid var(--primary);"><h4 style="color: var(--primary); margin-top: 0;"><i class="fas fa-dumbbell"></i> Practical Application:</h4>')
+    .replace(/^## Pro Tips:/gm, '</div><div class="tips-section" style="background: rgba(245, 158, 11, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 4px solid var(--warning);"><h4 style="color: var(--warning); margin-top: 0;"><i class="fas fa-lightbulb"></i> Pro Tips:</h4>');
+  
+  // Close any open divs
+  if (formatted.includes('<div class=') && !formatted.includes('</div><div')) {
+    formatted += '</div>';
+  }
+  
+  return formatted;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+
+// Keep these existing functions (they should already exist):
+function showTypingIndicator() {
+  document.getElementById('typingIndicator').style.display = 'flex';
+  document.getElementById('chatbotMessages').scrollTop = document.getElementById('chatbotMessages').scrollHeight;
+}
+
+function hideTypingIndicator() {
+  document.getElementById('typingIndicator').style.display = 'none';
+}
+
+function closeChatbot() {
+  document.getElementById('chatbotWindow').style.display = 'none';
+}
+    // Configuration for DeepSeek API
+const DEEPSEEK_API_CONFIG = {
+  baseURL: 'https://api.deepseek.com',
+  endpoint: '/chat/completions',
+  apiKey: 'sk-b85d00a7ab7848f38d7535f573d3d6a3', // ADD YOUR API KEY HERE
+  model: 'deepseek-chat'
+};
+
+// Cache for common questions
+const CHAT_CACHE = {
+  commonResponses: {},
+  ttl: 5 * 60 * 1000
+};
+
+// Fallback responses if API fails
+const FALLBACK_RESPONSES = {
+  greetings: [
+    "Hello! I'm FitBot, your AI fitness assistant. How can I help you today? 💪",
+    "Hi there! Ready to crush your fitness goals? What would you like to know?",
+    "Hey! I'm here to help with workout plans, nutrition advice, and fitness tips!"
+  ],
+  nutrition: [
+    "For proper nutrition: Aim for balanced macros - protein for muscle repair, carbs for energy, healthy fats for hormones.",
+    "Nutrition tip: Calculate your daily needs using the nutrition calculator above for personalized targets.",
+    "Protein is key! Aim for 1.6-2.2g per kg of body weight if building muscle."
+  ],
+  workout: [
+    "For an effective workout: Warm up 5-10 minutes, focus on compound exercises, cool down with stretching.",
+    "Try 3-4 workouts per week with rest days in between for optimal recovery.",
+    "Progressive overload is key: gradually increase weight, reps, or sets over time."
+  ],
+  default: [
+    "I'm here to help with fitness questions! Try asking about workouts, nutrition, or recovery.",
+    "Let me know what aspect of fitness you need help with - I've got tips for workouts, diet, and more!",
+    "For personalized workout plans, use the main generator above. I can answer specific fitness questions!"
+  ]
+};
+
+    // ================ SPOTIFY PLAYLISTS ================
+    const SPOTIFY_PLAYLISTS = [
+      {
+        name: "Power Workout",
+        description: "High energy for lifting",
+        embedUrl: "https://open.spotify.com/embed/playlist/37i9dQZF1DX70RN3TfWWJh",
+        color: "#1DB954"
+      },
+      {
+        name: "HIIT & Cardio",
+        description: "Fast beats for cardio",
+        embedUrl: "https://open.spotify.com/embed/playlist/37i9dQZF1DX76Wlfdnj7AP",
+        color: "#10b981"
+      },
+      {
+        name: "Focus & Flow",
+        description: "For yoga/stretching",
+        embedUrl: "https://open.spotify.com/embed/playlist/37i9dQZF1DWZqd5JICZI0u",
+        color: "#8b5cf6"
+      }
+    ];
+
+    // ================ API CONFIGURATION ================
+    const API_CONFIG = {
+      weather: 'https://api.openweathermap.org/data/2.5/weather',
+      exercises: 'https://wger.de/api/v2/exercise/',
+      quotes: 'https://type.fit/api/quotes'
+    };
+
+    // ================ FALLBACK DATA ================
+    const FALLBACK_DATA = {
+      exercises: {
+        'chest': [
+          'Bench Press', 'Incline Dumbbell Press', 'Push-ups', 'Chest Flyes', 
+          'Cable Crossovers', 'Dumbbell Pullover', 'Decline Bench Press', 'Dips'
+        ],
+        'back': [
+          'Deadlifts', 'Pull-ups', 'Bent Over Rows', 'Lat Pulldowns', 
+          'Seated Cable Rows', 'Face Pulls', 'T-Bar Rows', 'Hyperextensions'
+        ],
+        'legs': [
+          'Squats', 'Lunges', 'Leg Press', 'Romanian Deadlifts', 
+          'Leg Extensions', 'Calf Raises', 'Hack Squats', 'Bulgarian Split Squats'
+        ],
+        'arms': [
+          'Bicep Curls', 'Tricep Dips', 'Hammer Curls', 'Skull Crushers', 
+          'Tricep Pushdowns', 'Preacher Curls', 'Concentration Curls', 'Overhead Tricep Extension'
+        ],
+        'shoulders': [
+          'Overhead Press', 'Lateral Raises', 'Front Raises', 'Face Pulls', 
+          'Upright Rows', 'Arnold Press', 'Reverse Flyes', 'Shrugs'
+        ],
+        'full body': [
+          'Burpees', 'Thrusters', 'Clean and Press', 'Kettlebell Swings', 
+          'Mountain Climbers', 'Box Jumps', 'Battle Ropes', 'Jump Squats'
+        ]
+      },
+      youtubeLinks: {
+        'Bench Press': 'https://youtu.be/rT7DgCr-3pg',
+        'Squats': 'https://youtu.be/aclHkVaku9U',
+        'Deadlifts': 'https://youtu.be/op9kVnSso6Q',
+        'Pull-ups': 'https://youtu.be/eGo4IYlbE5g',
+        'Push-ups': 'https://youtu.be/IODxDxX7oi4',
+        'Incline Dumbbell Press': 'https://youtu.be/8iPEnn-ltC8',
+        'Bicep Curls': 'https://youtu.be/ykJmrZ5v0Oo',
+        'Overhead Press': 'https://youtu.be/_RlRDWO2jfg',
+        'Lunges': 'https://youtu.be/wrwwXE_x-pQ',
+        'Lat Pulldowns': 'https://youtu.be/CAwf7n6Luuc'
+      },
+      spotifyPlaylists: SPOTIFY_PLAYLISTS
+    };
+
+    // ================ API STATUS ================
+    let apiStatus = {
+      exerciseDb: false,
+      openWeather: false,
+      quotes: false,
+      spotify: true
+    };
+
+    // ================ INITIALIZATION ================
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeApp();
+    });
+
+    function initializeApp() {
+      checkAPIs();
+      loadHistory();
+      setupEventListeners();
+      updateConfigProgress();
+      initializeTimer();
+      showNotification('CAMTECH Gym Planner loaded successfully!', 'success');
+      
+      // Update progress bar based on form completion
+      const inputs = document.querySelectorAll('input, select');
+      inputs.forEach(input => {
+        input.addEventListener('change', updateConfigProgress);
+        input.addEventListener('input', updateConfigProgress);
+      });
+    }
+
+    function updateConfigProgress() {
+      const requiredFields = ['age', 'weight', 'height', 'gender', 'level', 'goal', 'focus'];
+      let completed = 0;
+      
+      requiredFields.forEach(field => {
+        const element = document.getElementById(field);
+        if (element && element.value && element.value.trim() !== '') {
+          completed++;
+        }
+      });
+      
+      const progress = (completed / requiredFields.length) * 100;
+      document.getElementById('configProgress').style.width = `${progress}%`;
+    }
+
+    // ================ EVENT LISTENERS ================
+    function setupEventListeners() {
+      // Chatbot event listeners
+document.getElementById('chatbotToggle').addEventListener('click', toggleChatbot);
+document.getElementById('chatbotClose').addEventListener('click', closeChatbot);
+document.getElementById('chatbotSend').addEventListener('click', sendChatMessage);
+document.getElementById('chatbotInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    sendChatMessage();
+  }
+});
+      
+      // Timer event listeners
+      document.getElementById('timerToggle').addEventListener('click', toggleTimer);
+      document.getElementById('timerClose').addEventListener('click', closeTimer);
+      document.getElementById('timerStart').addEventListener('click', startTimer);
+      document.getElementById('timerPause').addEventListener('click', pauseTimer);
+      document.getElementById('timerReset').addEventListener('click', resetTimer);
+      
+      // Timer preset buttons
+      document.querySelectorAll('.timer-preset').forEach(button => {
+        button.addEventListener('click', function() {
+          setTimerPreset(parseInt(this.dataset.time));
+          document.querySelectorAll('.timer-preset').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+      
+      // Form validation
+      document.getElementById('age').addEventListener('input', validateAge);
+      document.getElementById('weight').addEventListener('input', validateWeight);
+      document.getElementById('height').addEventListener('input', validateHeight);
+    }
+
+    // ================ FORM VALIDATION ================
+    function validateAge() {
+      const age = parseInt(document.getElementById('age').value);
+      const error = document.getElementById('ageError');
+      if (age < 13 || age > 70 || isNaN(age)) {
+        error.style.display = 'block';
+        return false;
+      } else {
+        error.style.display = 'none';
+        return true;
+      }
+    }
+
+    function validateWeight() {
+      const weight = parseInt(document.getElementById('weight').value);
+      const error = document.getElementById('weightError');
+      if (weight < 40 || weight > 200 || isNaN(weight)) {
+        error.style.display = 'block';
+        return false;
+      } else {
+        error.style.display = 'none';
+        return true;
+      }
+    }
+
+    function validateHeight() {
+      const height = parseInt(document.getElementById('height').value);
+      const error = document.getElementById('heightError');
+      if (height < 100 || height > 250 || isNaN(height)) {
+        error.style.display = 'block';
+        return false;
+      } else {
+        error.style.display = 'none';
+        return true;
+      }
+    }
+
+    function validateForm() {
+      return validateAge() && validateWeight() && validateHeight();
+    }
+
+    // ================ NOTIFICATION SYSTEM ================
+    function showNotification(message, type = 'info') {
+      const notification = document.getElementById('notification');
+      const icon = document.getElementById('notificationIcon');
+      const text = document.getElementById('notificationText');
+      
+      notification.className = `notification ${type}`;
+      text.textContent = message;
+      
+      switch(type) {
+        case 'success':
+          icon.className = 'fas fa-check-circle';
+          icon.style.color = 'var(--accent)';
+          break;
+        case 'error':
+          icon.className = 'fas fa-exclamation-circle';
+          icon.style.color = 'var(--danger)';
+          break;
+        case 'warning':
+          icon.className = 'fas fa-exclamation-triangle';
+          icon.style.color = 'var(--warning)';
+          break;
+        default:
+          icon.className = 'fas fa-info-circle';
+          icon.style.color = 'var(--primary)';
+      }
+      
+      notification.style.display = 'flex';
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 4000);
+    }
+
+    // ================ API FUNCTIONS ================
+    async function checkAPIs() {
+      const statusElement = document.getElementById('apiStatus');
+      
+      try {
+        // Test Exercise API
+        const exerciseTest = await Promise.race([
+          axios.get('https://wger.de/api/v2/exercise/?limit=1', { timeout: 3000 }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+        ]).catch(() => null);
+        
+        apiStatus.exerciseDb = !!exerciseTest;
+      } catch (error) {
+        apiStatus.exerciseDb = false;
+      }
+      
+      try {
+        // Test Quotes API
+        const quoteTest = await Promise.race([
+          axios.get('https://type.fit/api/quotes', { timeout: 3000 }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
+        ]).catch(() => null);
+        
+        apiStatus.quotes = !!quoteTest;
+      } catch (error) {
+        apiStatus.quotes = false;
+      }
+      
+      // Weather API requires key - set to false initially
+      apiStatus.openWeather = false;
+      
+      // Spotify embeds work without API
+      apiStatus.spotify = true;
+      
+      // Update status display
+      const onlineCount = Object.values(apiStatus).filter(Boolean).length;
+      
+      if (onlineCount >= 2) {
+        statusElement.textContent = `API: ${onlineCount}/4 Connected`;
+        statusElement.className = 'api-status online';
+        showNotification(`${onlineCount} APIs connected`, 'success');
+      } else if (onlineCount === 1) {
+        statusElement.textContent = `API: Limited Connection`;
+        statusElement.className = 'api-status offline';
+        showNotification('Using fallback data for some features', 'warning');
+      } else {
+        statusElement.textContent = 'API: Offline Mode';
+        statusElement.className = 'api-status offline';
+        showNotification('Running in offline mode with local data', 'info');
+      }
+    }
+
+    async function getExercisesFromAPI(bodyPart) {
+      const bodyPartLower = bodyPart.toLowerCase();
+      
+      try {
+        // Try WGER API first
+        const response = await axios.get(
+          `https://wger.de/api/v2/exercise/?language=2&limit=10`,
+          { timeout: 5000 }
+        );
+        
+        if (response.data && response.data.results) {
+          // Filter exercises by body part in the name
+          const filteredExercises = response.data.results
+            .filter(ex => ex.name.toLowerCase().includes(bodyPartLower))
+            .map(ex => ex.name);
+          
+          if (filteredExercises.length > 0) {
+            return filteredExercises.slice(0, 6);
+          }
+        }
+      } catch (error) {
+        console.log('API error, using fallback:', error.message);
+      }
+      
+      // Use fallback data
+      const exercises = FALLBACK_DATA.exercises[bodyPartLower] || FALLBACK_DATA.exercises['full body'];
+      return exercises.slice(0, 6);
+    }
+
+    async function getMotivationalQuote() {
+      try {
+        const response = await axios.get(API_CONFIG.quotes, {
+          timeout: 3000
+        }).catch(() => ({ data: [] }));
+        
+        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+          const randomQuote = response.data[Math.floor(Math.random() * response.data.length)];
+          return randomQuote.text || "Stay consistent, stay strong!";
+        }
+      } catch (error) {
+        console.log('Quotes API error, using fallback:', error);
+      }
+      
+      // Fallback quotes
+      const fallbackQuotes = [
+        "The only bad workout is the one that didn't happen.",
+        "Consistency beats intensity every time.",
+        "Stronger than yesterday, weaker than tomorrow.",
+        "Your body can stand almost anything. It's your mind you have to convince.",
+        "Don't wish for a good body, work for it."
+      ];
+      
+      return fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
+    }
+
+    async function getExerciseVideos(exerciseName) {
+      if (FALLBACK_DATA.youtubeLinks[exerciseName]) {
+        return FALLBACK_DATA.youtubeLinks[exerciseName];
+      }
+      
+      return `https://www.youtube.com/results?search_query=${encodeURIComponent(exerciseName + ' workout tutorial proper form')}`;
+    }
+
+    // ================ NUTRITION CALCULATOR ================
+    function calculateNutrition() {
+      if (!validateForm()) {
+        showNotification('Please fix form errors first', 'error');
+        return null;
+      }
+
+      const weight = parseFloat(document.getElementById('weight').value) || 70;
+      const height = parseFloat(document.getElementById('height').value) || 175;
+      const age = parseFloat(document.getElementById('age').value) || 25;
+      const gender = document.getElementById('gender').value;
+      const activity = parseFloat(document.getElementById('activity').value) || 1.55;
+      const goal = document.getElementById('goal').value;
+      
+      // Calculate BMR using Mifflin-St Jeor Equation
+      let bmr;
+if (gender === 'Male') {
+  bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+} else if (gender === 'Female') {
+  bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+} else {
+  // For "Prefer not to say" - use average of Male/Female
+  bmr = ((10 * weight + 6.25 * height - 5 * age + 5) + 
+         (10 * weight + 6.25 * height - 5 * age - 161)) / 2;
+}
+      
+      // Calculate TDEE
+      const tdee = bmr * activity;
+      
+      // Adjust for goal
+      let targetCalories;
+      let proteinMult, fatMult;
+      
+      switch(goal) {
+        case 'Build muscle':
+          targetCalories = tdee * 1.1;
+          proteinMult = 2.2;
+          fatMult = 0.8;
+          break;
+        case 'Lose fat':
+          targetCalories = tdee * 0.85;
+          proteinMult = 2.4;
+          fatMult = 0.7;
+          break;
+        default:
+          targetCalories = tdee;
+          proteinMult = 1.8;
+          fatMult = 0.8;
+      }
+      
+      // Calculate macros
+      const proteinGrams = Math.round((weight * proteinMult));
+      const fatGrams = Math.round((weight * fatMult));
+      const proteinCal = proteinGrams * 4;
+      const fatCal = fatGrams * 9;
+      const carbCal = targetCalories - proteinCal - fatCal;
+      const carbGrams = Math.round(carbCal / 4);
+      
+      currentNutrition = {
+        calories: Math.round(targetCalories),
+        protein: proteinGrams,
+        carbs: carbGrams,
+        fat: fatGrams,
+        tdee: Math.round(tdee)
+      };
+      
+      return currentNutrition;
+    }
+
+    // ================ WORKOUT SCHEDULE ================
+    function generateWorkoutSchedule() {
+      const workoutsPerWeek = parseInt(document.getElementById('workoutsPerWeek').value) || 3;
+      let schedule = [];
+      
+      if (workoutsPerWeek === 2) {
+        schedule = ['Mon', 'Thu'];
+      } else if (workoutsPerWeek === 3) {
+        schedule = ['Mon', 'Wed', 'Fri'];
+      } else if (workoutsPerWeek === 4) {
+        schedule = ['Mon', 'Tue', 'Thu', 'Fri'];
+      } else if (workoutsPerWeek === 5) {
+        schedule = ['Mon', 'Tue', 'Wed', 'Fri', 'Sat'];
+      } else if (workoutsPerWeek === 6) {
+        schedule = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      }
+      
+      currentSchedule = schedule;
+      return schedule;
+    }
+
+    // ================ WEATHER FUNCTIONS ================
+    async function getWeather(lat, lon) {
+      try {
+        // Demo weather data (since we need API key)
+        return {
+          temp: 22,
+          feelsLike: 24,
+          humidity: 65,
+          description: 'Partly cloudy',
+          windSpeed: 12
+        };
+      } catch (error) {
+        console.log('Weather fetch error:', error);
+        showNotification('Weather service temporarily unavailable', 'warning');
+        return {
+          temp: 22,
+          feelsLike: 24,
+          humidity: 65,
+          description: 'Partly cloudy',
+          windSpeed: 12
+        };
+      }
+    }
+
+    function getLocationForWeather() {
+      const weatherBtn = document.getElementById('weatherBtn');
+      weatherBtn.disabled = true;
+      weatherBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting location...';
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const weather = await getWeather(position.coords.latitude, position.coords.longitude);
+            if (weather) {
+              displayWeatherInfo(weather);
+              showNotification('Weather data loaded successfully!', 'success');
+            } else {
+              // Demo weather data
+              const demoWeather = {
+                temp: 22,
+                feelsLike: 24,
+                humidity: 65,
+                description: 'Partly cloudy',
+                windSpeed: 12
+              };
+              displayWeatherInfo(demoWeather);
+              showNotification('Using demo weather data. Add API key for real data.', 'info');
+            }
+            weatherBtn.disabled = false;
+            weatherBtn.innerHTML = '<i class="fas fa-cloud-sun"></i> GET WEATHER INFO';
+          },
+          (error) => {
+            console.error('Geolocation error:', error);
+            showNotification('Location access denied. Using default weather data.', 'warning');
+            
+            // Display demo weather
+            const demoWeather = {
+              temp: 22,
+              feelsLike: 24,
+              humidity: 65,
+              description: 'Partly cloudy',
+              windSpeed: 12
+            };
+            displayWeatherInfo(demoWeather);
+            
+            weatherBtn.disabled = false;
+            weatherBtn.innerHTML = '<i class="fas fa-cloud-sun"></i> GET WEATHER INFO';
+          }
+        );
+      } else {
+        showNotification('Geolocation not supported by your browser', 'warning');
+        weatherBtn.disabled = false;
+        weatherBtn.innerHTML = '<i class="fas fa-cloud-sun"></i> GET WEATHER INFO';
+      }
+    }
+
+    function displayWeatherInfo(weather) {
+      const resultDiv = document.getElementById('result');
+      const weatherHTML = `
+        <div class="weather-info fade-in">
+          <div class="weather-title">
+            <i class="fas fa-cloud-sun"></i> Current Weather for Your Workout
+          </div>
+          <div>Temperature: ${weather.temp}°C (Feels like ${weather.feelsLike}°C)</div>
+          <div>Condition: ${weather.description}</div>
+          <div>Humidity: ${weather.humidity}% | Wind: ${weather.windSpeed} km/h</div>
+          ${weather.temp > 30 ? 
+            '<div><i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i> Hot weather - stay hydrated and consider indoor workout!</div>' : 
+            weather.temp < 10 ? 
+            '<div><i class="fas fa-snowflake" style="color: #3b82f6;"></i> Cold weather - warm up properly and dress in layers!</div>' : 
+            '<div><i class="fas fa-thumbs-up" style="color: var(--accent);"></i> Perfect weather for working out!</div>'
+          }
+        </div>
+      `;
+      
+      // Insert at beginning of result
+      const currentContent = resultDiv.innerHTML;
+      resultDiv.innerHTML = weatherHTML + currentContent;
+    }
+
+    // ================ DISPLAY FUNCTIONS ================
+    async function displayExerciseVideos(exercises) {
+      let videosHTML = '';
+      
+      for (const exercise of exercises.slice(0, 3)) {
+        const videoLink = await getExerciseVideos(exercise);
+        videosHTML += `
+          <div class="exercise-video fade-in">
+            <div class="video-title">
+              <i class="fas fa-play-circle"></i> ${exercise} - Form Guide
+            </div>
+            <a href="${videoLink}" target="_blank" class="video-link">
+              <i class="fab fa-youtube"></i> Watch tutorial on YouTube
+            </a>
+          </div>
+        `;
+      }
+      
+      return videosHTML;
+    }
+
+    function displayNutritionInfo(nutrition) {
+      return `
+        <div class="nutrition-info fade-in">
+          <div class="nutrition-title">
+            <i class="fas fa-utensils"></i> Daily Nutrition Targets
+          </div>
+          <div>Based on your profile, here are your daily targets:</div>
+          <div class="macro-row">
+            <div class="macro-item">
+              <div class="macro-value">${nutrition.calories}</div>
+              <div class="macro-label">CALORIES</div>
+            </div>
+            <div class="macro-item">
+              <div class="macro-value">${nutrition.protein}g</div>
+              <div class="macro-label">PROTEIN</div>
+            </div>
+            <div class="macro-item">
+              <div class="macro-value">${nutrition.carbs}g</div>
+              <div class="macro-label">CARBS</div>
+            </div>
+            <div class="macro-item">
+              <div class="macro-value">${nutrition.fat}g</div>
+              <div class="macro-label">FAT</div>
+            </div>
+          </div>
+          <div style="margin-top: 10px; font-size: 0.8rem; color: var(--text-muted);">
+            Maintenance: ${nutrition.tdee} calories | Adjust based on progress
+          </div>
+        </div>
+      `;
+    }
+
+    function displayWorkoutSchedule(schedule) {
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      
+      return `
+        <div class="workout-schedule fade-in">
+          <div class="schedule-title">
+            <i class="fas fa-calendar-alt"></i> Weekly Workout Schedule (${schedule.length} days/week)
+          </div>
+          <div>Recommended workout days:</div>
+          <div class="schedule-days">
+            ${days.map(day => `
+              <div class="day-pill ${schedule.includes(day) ? 'active' : ''}">
+                ${day}
+              </div>
+            `).join('')}
+          </div>
+          <div style="margin-top: 10px; font-size: 0.8rem; color: var(--text-muted);">
+            Rest days are crucial for recovery and muscle growth
+          </div>
+        </div>
+      `;
+    }
+
+    // ================ MAIN RECOMMENDATION FUNCTION ================
+    async function getRecommendation() {
+      if (!validateForm()) {
+        showNotification('Please fix the form errors before generating', 'error');
+        return;
+      }
+
+      const generateBtn = document.querySelector('.btn-generate');
+      const generateText = document.getElementById('generateText');
+      const apiLoading = document.getElementById('apiLoading');
+      const refreshBtn = document.getElementById('refreshBtn');
+      
+      // Show loading state
+      generateBtn.disabled = true;
+      if (refreshBtn) refreshBtn.disabled = true;
+      generateText.textContent = 'FETCHING DATA...';
+      apiLoading.style.display = 'block';
+      
+      // Clear previous results
+      document.getElementById('result').innerHTML = '';
+      
+      try {
+        const age = parseInt(document.getElementById('age').value) || 25;
+        const level = document.getElementById('level').value || 'Intermediate';
+        const goal = document.getElementById('goal').value || 'Build muscle';
+        const focus = document.getElementById('focus').value || 'Chest';
+        const mod = parseFloat(document.getElementById('intensityMod').value) || 1;
+        const workoutsPerWeek = parseInt(document.getElementById('workoutsPerWeek').value) || 3;
+        
+        let rec = "";
+        let count = 0; 
+        let dur = 0; 
+        let intensity = "";
+
+        // Basic validation
+        if (age < 13 || age > 70) {
+          rec = "⚠️ Please enter a valid age (13-70).";
+        } else {
+          // Get exercises
+          const exercises = await getExercisesFromAPI(focus);
+          currentExercises = exercises;
+          
+          rec = "🔥 PHASE 1: WARM-UP\n• 5-10 min light cardio\n• Dynamic stretching\n\n";
+          let sets = Math.round(3 * mod);
+          
+          if (goal === "Build muscle") {
+            rec += `💪 PHASE 2: HYPERTROPHY (${focus})\n`;
+            intensity = level === "Advanced" ? "High" : level === "Intermediate" ? "Medium" : "Low";
+            
+            // Use currentExercises which should now be populated
+            currentExercises.forEach((exercise, index) => {
+              if (index < 5) {
+                const reps = level === "Advanced" ? "8-12" : "10-15";
+                rec += `• ${exercise}: ${sets}x${reps}\n`;
+              }
+            });
+            
+            count = Math.min(currentExercises.length, 5);
+            dur = count * 10 + 20;
+            rec += `\n⏰ REST TIMER: ${level === "Advanced" ? "90-120" : "60-90"} seconds between sets`;
+            
+          } else if (goal === "Lose fat") {
+            rec += "🏃‍♂️ PHASE 2: FAT LOSS HIIT\n";
+            intensity = "High";
+            
+            const hiitExercises = ['Burpees', 'Mountain Climbers', 'Jump Squats', 'High Knees', 'Plank Jacks'];
+            hiitExercises.forEach((exercise, index) => {
+              rec += `• ${exercise}: ${sets}x30s (30s rest)\n`;
+            });
+            
+            count = hiitExercises.length;
+            dur = 40;
+            rec += "\n⏰ REST TIMER: 30 seconds between exercises, 60 seconds between rounds";
+            
+          } else {
+            rec += "🧘‍♀️ PHASE 2: MAINTENANCE\n";
+            intensity = "Moderate";
+            
+            const maintenanceExercises = ['Bodyweight Squats', 'Push-ups', 'Plank', 'Lunges', 'Glute Bridges'];
+            maintenanceExercises.forEach((exercise, index) => {
+              rec += `• ${exercise}: 3x15\n`;
+            });
+            
+            count = maintenanceExercises.length;
+            dur = 35;
+            rec += "\n⏰ REST TIMER: 45-60 seconds between sets";
+          }
+          
+          rec += "\n\n🧘‍♂️ PHASE 3: COOL DOWN\n• 5-10 min static stretching\n• Focus on worked muscle groups\n• Hydrate well\n\n🎵 WORKOUT MUSIC: Use Spotify player for motivation!";
+        }
+
+        currentProtocolText = rec;
+        
+        // Get nutrition data
+        const nutrition = calculateNutrition();
+        
+        // Generate workout schedule
+        const schedule = generateWorkoutSchedule();
+        
+        // Get motivational quote
+        const quote = await getMotivationalQuote();
+        
+        // Build display content
+        let displayContent = `<div class="fade-in">${rec.replace(/\n/g, '<br>')}</div>`;
+        
+        // Add workout schedule
+        if (schedule && schedule.length > 0) {
+          displayContent += displayWorkoutSchedule(schedule);
+        }
+        
+        // Add nutrition info
+        if (nutrition) {
+          displayContent += displayNutritionInfo(nutrition);
+        }
+        
+        // Add exercise videos
+        if (currentExercises && currentExercises.length > 0) {
+          const videosHTML = await displayExerciseVideos(currentExercises);
+          displayContent += videosHTML;
+        }
+        
+        // Update UI
+        document.getElementById('result').innerHTML = displayContent;
+        document.getElementById('statsContainer').style.display = 'grid';
+        document.getElementById('totalExercises').textContent = count;
+        document.getElementById('workoutDuration').textContent = dur + "m";
+        document.getElementById('intensityLevel').textContent = intensity;
+        document.getElementById('downloadBtn').style.display = 'flex';
+        
+        // Display motivational quote
+        if (quote) {
+          document.getElementById('quoteBox').innerText = quote;
+          document.getElementById('quoteBox').style.display = 'block';
+        }
+        
+        saveToHistory(goal, focus, level);
+        
+        showNotification('✅ Workout plan generated successfully!', 'success');
+        
+      } catch (error) {
+        console.error('❌ Error in getRecommendation:', error);
+        
+        // Show error with fallback
+        document.getElementById('result').innerHTML = `
+          <div class="fade-in">
+            <h3 style="color: var(--primary);">Basic Workout Plan</h3>
+            <p style="color: var(--text-muted); margin-bottom: 15px;">API connection issue - using fallback plan:</p>
+            
+            <div style="background: rgba(99, 102, 241, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 15px;">
+              <h4 style="color: var(--primary); margin-top: 0;">🔥 WARM-UP</h4>
+              <p>• 5 min light cardio<br>• Dynamic stretching</p>
+              
+              <h4 style="color: var(--primary);">💪 MAIN WORKOUT</h4>
+              <p>• Bench Press: 3x10<br>• Push-ups: 3x15<br>• Dumbbell Rows: 3x12<br>• Squats: 3x10<br>• Plank: 3x60s</p>
+              
+              <h4 style="color: var(--primary);">🧘‍♂️ COOL DOWN</h4>
+              <p>• 5 min static stretching<br>• Hydrate well</p>
+            </div>
+            
+            <p style="color: var(--warning); font-size: 0.9rem;">
+              <i class="fas fa-exclamation-triangle"></i> Try refreshing or check your connection for full features.
+            </p>
+          </div>
+        `;
+        
+        showNotification('⚠️ Using fallback workout plan', 'warning');
+        
+      } finally {
+        // Always reset button state
+        generateBtn.disabled = false;
+        if (refreshBtn) refreshBtn.disabled = false;
+        generateText.textContent = 'GENERATE PROTOCOL';
+        apiLoading.style.display = 'none';
+        
+        // Make sure stats are visible
+        document.getElementById('statsContainer').style.display = 'grid';
+        document.getElementById('totalExercises').textContent = document.getElementById('totalExercises').textContent || '5';
+        document.getElementById('workoutDuration').textContent = document.getElementById('workoutDuration').textContent || '45m';
+        document.getElementById('intensityLevel').textContent = document.getElementById('intensityLevel').textContent || 'Medium';
+      }
+    }
+
+    // ================ PRESET FUNCTIONS ================
+    function applyPreset(g, a, l, go, f) {
+      try {
+        document.getElementById('gender').value = g;
+        document.getElementById('age').value = a;
+        document.getElementById('level').value = l;
+        document.getElementById('goal').value = go;
+        document.getElementById('focus').value = f;
+        
+        // Validate inputs
+        document.getElementById('age').dispatchEvent(new Event('input'));
+        document.getElementById('weight').dispatchEvent(new Event('input'));
+        document.getElementById('height').dispatchEvent(new Event('input'));
+        
+        // Wait a moment for validation then generate
+        setTimeout(() => {
+          if (validateForm()) {
+            getRecommendation();
+          } else {
+            showNotification('Please fix form errors for preset', 'error');
+          }
+        }, 100);
+      } catch (error) {
+        console.error('Error applying preset:', error);
+        showNotification('Error loading preset', 'error');
+      }
+    }
+
+    // ================ HISTORY FUNCTIONS ================
+    function saveToHistory(goal, focus, level) {
+      const timestamp = new Date().toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+      });
+      
+      historyLog.unshift({ goal, focus, level, date: timestamp });
+      if (historyLog.length > 5) historyLog.pop();
+      
+      // Save to localStorage
+      localStorage.setItem('camtechHistory', JSON.stringify(historyLog));
+      
+      // Update display
+      const body = document.getElementById('historyBody');
+      body.innerHTML = historyLog.map(h => 
+        `<tr>
+          <td>${h.goal}</td>
+          <td>${h.focus}</td>
+          <td>${h.level}</td>
+          <td>${h.date}</td>
+        </tr>`
+      ).join('');
+      document.getElementById('historyCard').style.display = 'block';
+    }
+
+    function loadHistory() {
+      if (historyLog.length > 0) {
+        const body = document.getElementById('historyBody');
+        body.innerHTML = historyLog.map(h => 
+          `<tr>
+            <td>${h.goal}</td>
+            <td>${h.focus}</td>
+            <td>${h.level}</td>
+            <td>${h.date}</td>
+          </tr>`
+        ).join('');
+        document.getElementById('historyCard').style.display = 'block';
+      }
+    }
+
+    function refreshAPIData() {
+      if (currentProtocolText) {
+        showNotification('Refreshing exercise data...', 'info');
+        getRecommendation();
+      } else {
+        showNotification('Generate a workout first', 'warning');
+      }
+    }
+
+    // ================ SPOTIFY PLAYER FUNCTIONS ================
+    function showSpotifyPlayer() {
+      const resultDiv = document.getElementById('result');
+      let spotifyHTML = `
+        <div class="spotify-container fade-in">
+          <div class="spotify-header">
+            <i class="fab fa-spotify spotify-logo"></i>
+            <h3 style="margin: 0; color: #1DB954;">Workout Music Player</h3>
+          </div>
+          
+          <div style="font-size: 0.9rem; margin-bottom: 15px; color: var(--text-muted);">
+            Boost your workout performance with curated playlists. Music can increase motivation by up to 15%!
+          </div>
+          
+          <div class="playlist-grid" id="playlistGrid">
+      `;
+      
+      // Add playlist buttons
+      FALLBACK_DATA.spotifyPlaylists.forEach((playlist, index) => {
+        spotifyHTML += `
+          <div class="playlist-item ${index === 0 ? 'active' : ''}" 
+               data-url="${playlist.embedUrl}" 
+               style="border-left: 4px solid ${playlist.color};"
+               onclick="loadSpotifyPlaylist('${playlist.embedUrl}', this)">
+            <div style="font-weight: 600; color: white;">${playlist.name}</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">${playlist.description}</div>
+          </div>
+        `;
+      });
+      
+      spotifyHTML += `
+          </div>
+          
+          <div class="player-container" id="spotifyPlayer">
+            <div style="text-align: center; padding: 30px; color: var(--text-muted);">
+              <i class="fab fa-spotify" style="font-size: 3rem; opacity: 0.5; margin-bottom: 15px;"></i>
+              <p>Select a playlist to start listening</p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 15px; font-size: 0.8rem; color: var(--text-muted);">
+            <i class="fas fa-info-circle"></i> Connect Spotify app for full control. Play music during workouts for better performance!
+          </div>
+        </div>
+      `;
+      
+      // Insert at beginning of result
+      const currentContent = resultDiv.innerHTML;
+      resultDiv.innerHTML = spotifyHTML + currentContent;
+      
+      // Load first playlist by default
+      if (FALLBACK_DATA.spotifyPlaylists.length > 0) {
+        setTimeout(() => {
+          loadSpotifyPlaylist(FALLBACK_DATA.spotifyPlaylists[0].embedUrl);
+        }, 100);
+      }
+    }
+
+    function loadSpotifyPlaylist(embedUrl, element = null) {
+      if (element) {
+        // Update active state
+        document.querySelectorAll('.playlist-item').forEach(item => {
+          item.classList.remove('active');
+        });
+        element.classList.add('active');
+      }
+      
+      const playerContainer = document.getElementById('spotifyPlayer');
+      playerContainer.innerHTML = `
+        <iframe style="border-radius: 12px; width: 100%; height: 352px;" 
+                src="${embedUrl}"
+                frameborder="0" 
+                allowfullscreen="" 
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                loading="lazy">
+        </iframe>
+        <div style="margin-top: 15px; font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+          <i class="fas fa-volume-up"></i> Adjust volume directly in the player
+        </div>
+      `;
+      
+      showNotification('Spotify playlist loaded! Music boosts workout performance.', 'success');
+    }
+
+    // ================ TIMER FUNCTIONS ================
+    function initializeTimer() {
+      updateTimerDisplay();
+    }
+
+    function toggleTimer() {
+      const window = document.getElementById('timerWindow');
+      const isVisible = window.style.display === 'flex';
+      window.style.display = isVisible ? 'none' : 'flex';
+    }
+
+    function closeTimer() {
+      document.getElementById('timerWindow').style.display = 'none';
+    }
+
+    function setTimerPreset(seconds) {
+      timerSeconds = seconds;
+      updateTimerDisplay();
+      
+      // Show notification for the preset
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      const timeStr = minutes > 0 ? 
+        `${minutes}:${remainingSeconds.toString().padStart(2, '0')}` : 
+        `${seconds} seconds`;
+      
+      showNotification(`Timer set to ${timeStr}`, 'info');
+    }
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(timerSeconds / 60);
+      const seconds = timerSeconds % 60;
+      document.getElementById('timerDisplay').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+      if (isTimerRunning) return;
+      
+      isTimerRunning = true;
+      document.getElementById('timerStart').disabled = true;
+      document.getElementById('timerPause').disabled = false;
+      
+      timerInterval = setInterval(() => {
+        if (timerSeconds > 0) {
+          timerSeconds--;
+          updateTimerDisplay();
+          
+          // Play sound when timer reaches 0
+          if (timerSeconds === 0) {
+            playTimerSound();
+            showNotification('Rest time is over! Time for your next set!', 'success');
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            document.getElementById('timerStart').disabled = false;
+            document.getElementById('timerPause').disabled = true;
+          }
+        }
+      }, 1000);
+      
+      showNotification('Timer started! Rest between sets.', 'info');
+    }
+
+    function pauseTimer() {
+      if (!isTimerRunning) return;
+      
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      document.getElementById('timerStart').disabled = false;
+      document.getElementById('timerPause').disabled = true;
+      
+      showNotification('Timer paused', 'warning');
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      timerSeconds = 180;
+      updateTimerDisplay();
+      document.getElementById('timerStart').disabled = false;
+      document.getElementById('timerPause').disabled = true;
+      
+      // Reset active preset to 3 minutes
+      document.querySelectorAll('.timer-preset').forEach(b => {
+        b.classList.remove('active');
+        if (parseInt(b.dataset.time) === 180) {
+          b.classList.add('active');
+        }
+      });
+      
+      showNotification('Timer reset to 3:00', 'info');
+    }
+
+    function playTimerSound() {
+      // Create a simple beep sound
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+      } catch (error) {
+        console.log('Audio context not supported');
+      }
+    }
+
+    // ================ CHATBOT FUNCTIONS ================
+   function toggleChatbot() {
+  const window = document.getElementById('chatbotWindow');
+  const isVisible = window.style.display === 'flex';
+  window.style.display = isVisible ? 'none' : 'flex';
+  
+  if (!isVisible) {
+    document.getElementById('chatbotInput').focus();
+    
+    // Check if API key is set (this is already there at line 508-513)
+    if (AI_CONFIG.apiKey === 'YOUR_OPENAI_API_KEY_HERE') {
+      setTimeout(() => {
+        addChatMessage("⚠️ **Note**: Please add your OpenAI API key to enable full AI features. Using fallback responses for now.", false);
+      }, 500);
+    }
+  }
+}
+
+// Add after chatbot configuration
+let professionalContext = {
+  userProfile: {
+    injuries: [],
+    limitations: [],
+    equipment: ['standard gym'],
+    timeConstraints: 60,
+    preferences: {
+      cardioType: null,
+      splitPreference: null,
+      intensityPreference: 'moderate'
+    }
+  },
+  
+  conversationHistory: [],
+  lastTopics: [],
+  
+  // Professional assessment
+  assessment: {
+    needsAnalysisDone: false,
+    movementScreening: {},
+    weaknessesIdentified: [],
+    strengthsIdentified: []
+  },
+  
+  // Progress tracking
+  progress: {
+    questionsAsked: 0,
+    topicsCovered: [],
+    knowledgeLevel: 'beginner'
+  }
+};
+
+function updateProfessionalContext(userMessage, botResponse) {
+  // Track conversation topics
+  professionalContext.conversationHistory.push({
+    user: userMessage,
+    bot: botResponse,
+    timestamp: new Date().toISOString()
+  });
+  
+  // Keep history manageable
+  if (professionalContext.conversationHistory.length > 20) {
+    professionalContext.conversationHistory = professionalContext.conversationHistory.slice(-20);
+  }
+  
+  // Analyze for needs
+  analyzeUserNeeds(userMessage);
+  
+  // Update knowledge assessment
+  professionalContext.progress.questionsAsked++;
+  
+  // Save to localStorage
+  localStorage.setItem('camtech_pro_context', JSON.stringify(professionalContext));
+}
+
+function analyzeUserNeeds(message) {
+  const msg = message.toLowerCase();
+  
+  if (msg.includes('pain') || msg.includes('hurt') || msg.includes('injur')) {
+    professionalContext.assessment.weaknessesIdentified.push('Potential injury concern');
+    professionalContext.userProfile.requiresRehabFocus = true;
+  }
+  
+  if (msg.includes('time') && (msg.includes('short') || msg.includes('busy'))) {
+    professionalContext.userProfile.timeConstraints = 45;
+    professionalContext.userProfile.preferences.timeEfficient = true;
+  }
+  
+  if (msg.includes('home') || msg.includes('no gym')) {
+    professionalContext.userProfile.equipment = ['bodyweight', 'dumbbells'];
+  }
+}
+const PROFESSIONAL_QA = {
+  // Training Science
+  'volume frequency': {
+    question: /(how many sets|volume|frequency|how often)/i,
+    response: `**Evidence-Based Volume & Frequency Guidelines** [Study:Schoenfeld et al., 2019]:
+    
+📊 **Hypertrophy (Muscle Growth):**
+- **Weekly Volume**: 10-20 sets per muscle group
+- **Frequency**: 2-3x weekly per muscle group optimal
+- **Intensity**: 60-80% 1RM (6-15 rep range)
+
+💪 **Strength (Neural Adaptations):**
+- **Weekly Volume**: 10-15 sets per movement pattern
+- **Frequency**: 2-4x weekly for skill acquisition
+- **Intensity**: 80-90% 1RM (1-6 rep range)
+
+⚠️ **Considerations**: Individual recovery capacity varies by ±30% from these averages.`
+  },
+  
+  // Nutrition Timing
+  'nutrient timing': {
+    question: /(when to eat|pre workout|post workout|fasting|meal timing)/i,
+    response: `**Nutrient Timing Hierarchy of Importance** [Citation:Aragon & Schoenfeld, 2013]:
+    
+🥇 **Primary (Most Important):**
+1. **Total Daily Calories**: Determines weight loss/gain
+2. **Macronutrient Distribution**: Protein: 1.6-2.2g/kg for athletes
+3. **Micronutrient Adequacy**: Vitamin D, Omega-3s, Magnesium
+
+🥈 **Secondary (Moderately Important):**
+1. **Protein Distribution**: 4-6 meals with 0.4g/kg protein each
+2. **Pre-workout**: Carbs + protein 1-3h before training
+3. **Post-workout**: Protein within 2h, carbs if training again <8h
+
+🥉 **Tertiary (Least Important):**
+- Specific nutrient timing windows
+- BCAA supplementation with adequate protein
+- "Anabolic window" (except for fasted training)`
+  }
+};
+
+    function closeChatbot() {
+      document.getElementById('chatbotWindow').style.display = 'none';
+    }
+
+    function addChatMessage(message, isUser = false) {
+      const messagesContainer = document.getElementById('chatbotMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'} fade-in`;
+      
+      if (isUser) {
+        messageDiv.innerHTML = `<strong>You:</strong> ${message}`;
+      } else {
+        messageDiv.innerHTML = `<strong>FitBot:</strong> ${message}`;
+      }
+      
+      messagesContainer.appendChild(messageDiv);
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+      document.getElementById('typingIndicator').style.display = 'flex';
+      document.getElementById('chatbotMessages').scrollTop = document.getElementById('chatbotMessages').scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+      document.getElementById('typingIndicator').style.display = 'none';
+    }
+
+    function getChatbotResponse(userMessage) {
+      const message = userMessage.toLowerCase().trim();
+      
+      // Greetings
+      if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
+        const greetings = FITNESS_KNOWLEDGE.greetings;
+        return greetings[Math.floor(Math.random() * greetings.length)];
+      }
+      
+      // Goodbyes
+      if (message.includes('bye') || message.includes('goodbye')) {
+        return "Goodbye! Remember: consistency is key to fitness success!";
+      }
+      
+      // Thanks
+      if (message.includes('thank')) {
+        return "You're welcome! Keep up the great work on your fitness journey! 💪";
+      }
+      
+      // Check for specific topics
+      for (const [category, responses] of Object.entries(FITNESS_KNOWLEDGE)) {
+        if (category === 'greetings') continue;
+        
+        for (const [topic, response] of Object.entries(responses)) {
+          if (message.includes(topic)) {
+            return response;
+          }
+        }
+      }
+      
+      // Check for timer mention
+      if (message.includes('timer') || message.includes('rest') || message.includes('break')) {
+        return FITNESS_KNOWLEDGE.timer;
+      }
+      
+      // Check for music/spotify mention
+      if (message.includes('music') || message.includes('spotify') || message.includes('song')) {
+        return FITNESS_KNOWLEDGE.spotify;
+      }
+      
+      // General fitness advice
+      const generalAdvice = [
+        "For best results, focus on compound exercises with proper form.",
+        "Nutrition is key - make sure you're eating enough protein for your goals.",
+        "Consistency is more important than intensity. Regular moderate workouts beat occasional intense ones.",
+        "Don't forget to warm up before and cool down after your workouts.",
+        "Track your progress to stay motivated and make adjustments as needed.",
+        "Listen to your body - rest when you need to and don't push through pain.",
+        "Stay hydrated! Water affects your performance more than you might think.",
+        "Use the workout timer for precise rest periods between sets!",
+        "Try the Spotify player for workout music - it boosts motivation!"
+      ];
+      
+      return generalAdvice[Math.floor(Math.random() * generalAdvice.length)];
+    }
+
+    // ================ PDF GENERATION ================
+    function downloadPDF() {
+      if (!currentProtocolText || currentProtocolText.trim() === "") {
+        showNotification('Please generate a workout first!', 'error');
+        return;
+      }
+
+      const gender = document.getElementById('gender').value;
+      const age = document.getElementById('age').value;
+      const level = document.getElementById('level').value;
+      const goal = document.getElementById('goal').value;
+      const focus = document.getElementById('focus').value;
+      const weight = document.getElementById('weight').value;
+      const height = document.getElementById('height').value;
+      const workoutsPerWeek = document.getElementById('workoutsPerWeek').value;
+      
+      const timestamp = new Date().toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      let pdfContent = `
+        <div style="padding: 40px; font-family: 'Helvetica', 'Arial', sans-serif; color: #333; line-height: 1.6;">
+          <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #6366f1;">
+            <h1 style="color: #6366f1; margin: 0 0 10px 0;">GYM PLANNER CAMTECH</h1>
+            <h3 style="color: #a855f7; margin: 0 0 15px 0;">Elite Protocol v3.5 - AI Enhanced</h3>
+            <p style="color: #666; font-size: 14px; margin: 0;">Generated: ${timestamp}</p>
+          </div>
+          
+          <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #e2e8f0;">
+            <h2 style="color: #333; margin-top: 0; margin-bottom: 15px; font-size: 18px;">User Profile</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 14px;">
+              <div><strong style="color: #6366f1;">Gender:</strong> ${gender}</div>
+              <div><strong style="color: #6366f1;">Age:</strong> ${age}</div>
+              <div><strong style="color: #6366f1;">Weight:</strong> ${weight} kg</div>
+              <div><strong style="color: #6366f1;">Height:</strong> ${height} cm</div>
+              <div><strong style="color: #6366f1;">Experience:</strong> ${level}</div>
+              <div><strong style="color: #6366f1;">Workouts/Week:</strong> ${workoutsPerWeek}</div>
+              <div><strong style="color: #6366f1;">Goal:</strong> ${goal}</div>
+              <div><strong style="color: #6366f1;">Focus:</strong> ${focus}</div>
+            </div>
+          </div>
+      `;
+
+      // Add workout schedule
+      if (currentSchedule) {
+        pdfContent += `
+          <div style="background: rgba(168, 85, 247, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid rgba(168, 85, 247, 0.3);">
+            <h3 style="color: #a855f7; margin-top: 0; margin-bottom: 15px; font-size: 16px;">Weekly Workout Schedule</h3>
+            <p>Recommended workout days: ${currentSchedule.join(', ')}</p>
+            <p style="color: #666; font-size: 13px; margin-top: 10px;">Rest on other days for optimal recovery</p>
+          </div>
+        `;
+      }
+
+      // Add nutrition if available
+      if (currentNutrition) {
+        pdfContent += `
+          <div style="background: rgba(16, 185, 129, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid rgba(16, 185, 129, 0.3);">
+            <h3 style="color: #10b981; margin-top: 0; margin-bottom: 15px; font-size: 16px;">Daily Nutrition Targets</h3>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center;">
+              <div>
+                <div style="font-size: 20px; font-weight: bold; color: #10b981;">${currentNutrition.calories}</div>
+                <div style="font-size: 11px; color: #64748b;">CALORIES</div>
+              </div>
+              <div>
+                <div style="font-size: 20px; font-weight: bold; color: #10b981;">${currentNutrition.protein}g</div>
+                <div style="font-size: 11px; color: #64748b;">PROTEIN</div>
+              </div>
+              <div>
+                <div style="font-size: 20px; font-weight: bold; color: #10b981;">${currentNutrition.carbs}g</div>
+                <div style="font-size: 11px; color: #64748b;">CARBS</div>
+              </div>
+              <div>
+                <div style="font-size: 20px; font-weight: bold; color: #10b981;">${currentNutrition.fat}g</div>
+                <div style="font-size: 11px; color: #64748b;">FAT</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // Add workout protocol
+      pdfContent += `
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #333; margin-top: 0; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #10b981; font-size: 20px;">
+            Personalized Workout Protocol
+          </h2>
+          <div style="background: white; padding: 25px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <div style="font-size: 15px; color: #444; white-space: pre-line;">
+              ${currentProtocolText.replace(/\n/g, '<br>')}
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Add exercise list if available
+      if (currentExercises && currentExercises.length > 0) {
+        pdfContent += `
+          <div style="background: rgba(99, 102, 241, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid rgba(99, 102, 241, 0.3);">
+            <h3 style="color: #6366f1; margin-top: 0; margin-bottom: 15px; font-size: 16px;">Recommended Exercises</h3>
+            <ul style="color: #666; font-size: 14px; padding-left: 20px; margin: 0;">
+              ${currentExercises.map(ex => `<li>${ex}</li>`).join('')}
+            </ul>
+            <p style="color: #64748b; font-size: 12px; margin-top: 10px; font-style: italic;">
+              Search these exercises on YouTube for form tutorials
+            </p>
+          </div>
+        `;
+      }
+
+      // Add timer instructions
+      pdfContent += `
+        <div style="background: rgba(236, 72, 153, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid rgba(236, 72, 153, 0.3);">
+          <h3 style="color: #ec4899; margin-top: 0; margin-bottom: 10px; font-size: 16px;">Rest Timer Instructions</h3>
+          <p style="color: #666; font-size: 14px;">Use the built-in timer for optimal rest periods:</p>
+          <ul style="color: #666; font-size: 14px; padding-left: 20px; margin: 10px 0;">
+            <li>Strength Training: 90-180 seconds rest</li>
+            <li>Hypertrophy: 60-90 seconds rest</li>
+            <li>Endurance: 30-60 seconds rest</li>
+            <li>HIIT: 30 seconds rest between exercises</li>
+          </ul>
+          <p style="color: #64748b; font-size: 12px; margin-top: 10px; font-style: italic;">
+            Proper rest maximizes performance and recovery
+          </p>
+        </div>
+      `;
+
+      // Add statistics
+      pdfContent += `
+        <div style="background: #f0f9ff; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #bae6fd;">
+          <h3 style="color: #0369a1; margin-top: 0; margin-bottom: 10px; font-size: 16px;">Workout Statistics</h3>
+          <div style="display: flex; justify-content: space-between; text-align: center;">
+            <div>
+              <div style="font-size: 24px; font-weight: bold; color: #10b981;">${document.getElementById('totalExercises').textContent}</div>
+              <div style="font-size: 12px; color: #64748b;">Exercises</div>
+            </div>
+            <div>
+              <div style="font-size: 24px; font-weight: bold; color: #10b981;">${document.getElementById('workoutDuration').textContent}</div>
+              <div style="font-size: 12px; color: #64748b;">Duration</div>
+            </div>
+            <div>
+              <div style="font-size: 24px; font-weight: bold; color: #10b981;">${document.getElementById('intensityLevel').textContent}</div>
+              <div style="font-size: 12px; color: #64748b;">Intensity</div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="text-align: center; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 12px;">
+          <p style="margin: 5px 0;">© ${new Date().getFullYear()} CAMTECH Gym Planner | Elite Protocol v3.5 - AI Enhanced</p>
+          <p style="margin: 5px 0; font-style: italic;">"${document.getElementById('quoteBox').textContent || 'Stay consistent, stay strong'}"</p>
+          <p style="margin: 5px 0; font-size: 10px;">Includes workout timer and Spotify integration</p>
+        </div>
+      </div>
+      `;
+
+      const opt = {
+        margin: 10,
+        filename: `Camtech_Workout_${goal}_${focus}_${timestamp.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2,
+          useCORS: true
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait' 
+        }
+      };
+
+      html2pdf().set(opt).from(pdfContent).save().then(() => {
+        showNotification('PDF generated successfully!', 'success');
+      }).catch(err => {
+        console.error("Error generating PDF:", err);
+        showNotification('Error generating PDF. Please try again.', 'error');
+      });
+    }
+    // Add this simple chatbot implementation for testing
+document.getElementById('chatbotSend').addEventListener('click', testChatbot);
+document.getElementById('chatbotInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') {
+    testChatbot();
+  }
+});
+
+function testChatbot() {
+  const input = document.getElementById('chatbotInput');
+  const message = input.value.trim();
+  
+  if (!message) return;
+  
+  // Add user message
+  const messagesContainer = document.getElementById('chatbotMessages');
+  const userMessage = document.createElement('div');
+  userMessage.className = 'message user-message fade-in';
+  userMessage.innerHTML = `<strong>You:</strong> ${message}`;
+  messagesContainer.appendChild(userMessage);
+  
+  // Clear input
+  input.value = '';
+  
+  // Show typing indicator
+  const typingIndicator = document.getElementById('typingIndicator');
+  typingIndicator.style.display = 'flex';
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  
+  // Simulate AI response after delay
+  setTimeout(() => {
+    typingIndicator.style.display = 'none';
+    
+    // Get response based on message
+const response = awaitgetProfessionalResponse(message);
+    
+    const botMessage = document.createElement('div');
+    botMessage.className = 'message bot-message fade-in';
+    botMessage.innerHTML = `<strong>FitBot:</strong> ${response}`;
+    messagesContainer.appendChild(botMessage);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }, 1000);
+}
+
+function getTestResponse(message) {
+  const msg = message.toLowerCase();
+  
+  if (msg.includes('hello') || msg.includes('hi') || msg.includes('hey')) {
+    return "Hello! I'm your AI fitness assistant. How can I help with your workout today? 💪";
+  }
+  
+  if (msg.includes('workout') || msg.includes('exercise')) {
+    return "For a great workout, try: 3 sets of 8-12 reps with 60-90 seconds rest between sets. Focus on compound exercises like squats, bench press, and rows!";
+  }
+  
+  if (msg.includes('nutrition') || msg.includes('diet') || msg.includes('protein')) {
+    return "Nutrition is key! Aim for 1.6-2.2g of protein per kg of body weight daily. Use the nutrition calculator in the main app for personalized macros! 🍗";
+  }
+  
+  if (msg.includes('timer') || msg.includes('rest')) {
+    return "Proper rest is crucial! Use the workout timer widget (bottom-left) for precise rest periods. 60-90 seconds for hypertrophy, 90-180 for strength!";
+  }
+  
+  if (msg.includes('spotify') || msg.includes('music')) {
+    return "Boost your workout with music! Click the Spotify button in the app to access curated workout playlists. Music can increase motivation by up to 15%! 🎵";
+  }
+  
+  if (msg.includes('form') || msg.includes('technique')) {
+    return "Always prioritize proper form! Watch the exercise videos in your generated plan for correct technique. Remember: quality over quantity!";
+  }
+  
+  return "Thanks for your message! I can help with workout plans, nutrition advice, exercise form, and more. Try using the quick action buttons for specific help!";
+}
+  </script>
+</body>
+</html>

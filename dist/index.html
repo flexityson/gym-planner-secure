@@ -1,0 +1,5037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GYM PLANNER CAMTECH | Elite Protocol v3.5</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --secondary: #a855f7;
+      --accent: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --background: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    body {
+      background-color: var(--background);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0, transparent 50%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 40px 20px;
+      position: relative;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    header { text-align: center; margin-bottom: 40px; }
+    .brand-badge {
+      display: inline-block; padding: 6px 16px; background: rgba(99, 102, 241, 0.1);
+      border: 1px solid var(--primary); color: var(--primary); border-radius: 100px;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
+    }
+
+    h1 { font-size: 2.8rem; font-weight: 800; margin: 10px 0; }
+    .camtech-text { color: var(--primary); }
+
+    .preset-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
+    .preset-btn {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+      color: var(--text-main); padding: 8px 16px; border-radius: 12px; cursor: pointer;
+      font-size: 0.8rem; transition: 0.3s; display: flex; align-items: center; gap: 8px;
+    }
+    .preset-btn:hover { background: var(--primary); transform: translateY(-2px); }
+
+    .grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 30px; }
+
+    .card {
+      background: var(--card-bg); backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border); border-radius: 24px; padding: 32px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    }
+
+    .section-header { 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between;
+      gap: 12px; 
+      margin-bottom: 24px; 
+      border-bottom: 1px solid var(--glass-border); 
+      padding-bottom: 15px; 
+    }
+
+    .api-status {
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .api-status.online { background: rgba(16, 185, 129, 0.2); color: var(--accent); }
+    .api-status.offline { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+    .form-group { margin-bottom: 18px; position: relative; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+    
+    select, input {
+      width: 100%; padding: 12px 16px; background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--glass-border); border-radius: 12px; color: white; transition: 0.3s;
+    }
+    input:invalid, select:invalid {
+      border-color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
+    .error-message {
+      color: var(--danger);
+      font-size: 0.75rem;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+    .btn-group { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+    .btn {
+      width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .btn-generate { background: linear-gradient(to right, var(--primary), var(--secondary)); color: white; }
+    .btn-download { background: rgba(255, 255, 255, 0.05); color: var(--text-main); border: 1px solid var(--glass-border); display: none; }
+    .btn-api { background: rgba(245, 158, 11, 0.1); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .btn-spotify { background: rgba(29, 185, 84, 0.1); color: #1DB954; border: 1px solid rgba(29, 185, 84, 0.3); }
+    .btn-timer { background: rgba(236, 72, 153, 0.1); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.3); }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+    #result { 
+      white-space: pre-line; line-height: 1.8; font-size: 0.95rem; 
+      max-height: 450px; overflow-y: auto; padding-right: 10px;
+    }
+
+    .exercise-video {
+      margin: 15px 0;
+      padding: 15px;
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+    .video-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .video-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .video-link:hover { text-decoration: underline; }
+
+    .nutrition-info {
+      margin: 15px 0;
+      padding: 15px;
+      background: rgba(16, 185, 129, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .nutrition-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .macro-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .macro-item {
+      text-align: center;
+      padding: 8px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+    }
+    .macro-value {
+      font-weight: 800;
+      color: var(--accent);
+      font-size: 1rem;
+    }
+    .macro-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .weather-info {
+      margin: 10px 0;
+      padding: 12px;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      font-size: 0.85rem;
+    }
+    .weather-title {
+      font-weight: 600;
+      color: #3b82f6;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .api-loading {
+      display: none;
+      text-align: center;
+      padding: 10px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .api-loading i { animation: spin 1s linear infinite; }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 25px; }
+    .stat-card {
+      background: rgba(255,255,255,0.03); padding: 15px; border-radius: 16px;
+      text-align: center; border: 1px solid var(--glass-border);
+    }
+    .stat-num { display: block; font-size: 1.2rem; font-weight: 800; color: var(--accent); }
+    .stat-lab { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+
+    .quote-box {
+        margin-top: 20px; padding: 15px; background: rgba(16, 185, 129, 0.1);
+        border-radius: 15px; border: 1px dashed var(--accent); font-style: italic; font-size: 0.85rem; color: var(--accent);
+    }
+
+    .history-card { margin-top: 25px; background: rgba(255,255,255,0.02); border-radius: 20px; padding: 20px; border: 1px solid var(--glass-border); display: none; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
+    th { text-align: left; color: var(--text-muted); padding: 8px; border-bottom: 1px solid var(--glass-border); }
+    td { padding: 10px 8px; color: var(--text-main); }
+
+    /* Chatbot Styles */
+    .chatbot-container {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 1000;
+    }
+
+    .chatbot-btn {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+      transition: all 0.3s ease;
+      border: none;
+    }
+
+    .chatbot-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 15px 30px rgba(99, 102, 241, 0.6);
+    }
+
+    .chatbot-window {
+      position: absolute;
+      bottom: 70px;
+      right: 0;
+      width: 350px;
+      height: 500px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chatbot-header {
+      padding: 20px;
+      background: rgba(99, 102, 241, 0.1);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chatbot-header h3 {
+      color: var(--text-main);
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chatbot-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .chatbot-close:hover {
+      color: var(--primary);
+    }
+
+    .chatbot-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      line-height: 1.4;
+      font-size: 0.9rem;
+      word-wrap: break-word;
+    }
+
+    .bot-message {
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      align-self: flex-start;
+      border-bottom-left-radius: 5px;
+    }
+
+    .user-message {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      align-self: flex-end;
+      border-bottom-right-radius: 5px;
+    }
+
+    .chatbot-input {
+      padding: 20px;
+      border-top: 1px solid var(--glass-border);
+      display: flex;
+      gap: 10px;
+    }
+
+    .chatbot-input input {
+      flex: 1;
+      padding: 12px 16px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    .chatbot-input button {
+      padding: 12px 20px;
+      background: var(--primary);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .chatbot-input button:hover {
+      background: #4f46e5;
+    }
+
+    .typing-indicator {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      padding: 12px 16px;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 18px;
+      align-self: flex-start;
+      max-width: 80px;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-5px); }
+    }
+
+    /* Timer Styles */
+    .timer-container {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      z-index: 1000;
+    }
+
+    .timer-btn {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(to right, #ec4899, #8b5cf6);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4);
+      transition: all 0.3s ease;
+      border: none;
+    }
+
+    .timer-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 15px 30px rgba(236, 72, 153, 0.6);
+    }
+
+    .timer-window {
+      position: absolute;
+      bottom: 70px;
+      left: 0;
+      width: 280px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 1001;
+    }
+
+    .timer-header {
+      padding: 15px;
+      background: rgba(236, 72, 153, 0.1);
+      border-bottom: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .timer-header h3 {
+      color: var(--text-main);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .timer-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .timer-close:hover {
+      color: #ec4899;
+    }
+
+    .timer-content {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .timer-display {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: #ec4899;
+      margin-bottom: 20px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .timer-controls button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timer-start {
+      background: #10b981;
+      color: white;
+    }
+
+    .timer-pause {
+      background: #f59e0b;
+      color: white;
+    }
+
+    .timer-reset {
+      background: #ef4444;
+      color: white;
+    }
+
+    .timer-presets {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .timer-preset {
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    .timer-preset:hover {
+      background: rgba(236, 72, 153, 0.2);
+      border-color: #ec4899;
+    }
+
+    .timer-preset.active {
+      background: #ec4899;
+      color: white;
+    }
+
+    /* Spotify Player Styles */
+    .spotify-container {
+      margin: 15px 0;
+      padding: 15px;
+      background: rgba(29, 185, 84, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(29, 185, 84, 0.3);
+    }
+
+    .spotify-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .spotify-logo {
+      color: #1DB954;
+      font-size: 1.5rem;
+    }
+
+    .spotify-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .spotify-controls button {
+      padding: 8px 15px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+
+    .spotify-controls button:hover {
+      background: rgba(29, 185, 84, 0.3);
+    }
+
+    .playlist-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .playlist-item {
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-align: center;
+      font-size: 0.8rem;
+    }
+
+    .playlist-item:hover {
+      background: rgba(29, 185, 84, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .playlist-item.active {
+      background: #1DB954;
+      color: white;
+    }
+
+    @media (max-width: 850px) { 
+      .grid { grid-template-columns: 1fr; }
+      .chatbot-window {
+        width: calc(100vw - 40px);
+        right: 20px;
+        height: 450px;
+      }
+      .timer-window {
+        width: calc(100vw - 40px);
+        left: 20px;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      .playlist-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    .fade-in { animation: fadeIn 0.5s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      display: none;
+      align-items: center;
+      gap: 12px;
+      z-index: 1001;
+      max-width: 350px;
+    }
+    .notification.success { border-left: 4px solid var(--accent); }
+    .notification.error { border-left: 4px solid var(--danger); }
+    .notification.warning { border-left: 4px solid var(--warning); }
+    .notification.info { border-left: 4px solid var(--primary); }
+
+    .workout-schedule {
+      margin: 15px 0;
+      padding: 15px;
+      background: rgba(168, 85, 247, 0.1);
+      border-radius: 12px;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    .schedule-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--secondary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .schedule-days {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .day-pill {
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+      font-size: 0.8rem;
+      border: 1px solid var(--glass-border);
+    }
+    .day-pill.active {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .config-progress {
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+    .config-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    /* Professional Chatbot Styles */
+    .chatbot-header {
+      background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+    }
+
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--glass-border);
+    }
+
+    .user-badge, .coach-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .coach-credentials {
+      display: flex;
+      gap: 6px;
+    }
+
+    .credential-tag {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.65rem;
+      font-weight: 600;
+    }
+
+    .message-time {
+      font-size: 0.7rem;
+      opacity: 0.7;
+    }
+
+    .message-content {
+      line-height: 1.6;
+      font-size: 0.9rem;
+    }
+
+    .section-title {
+      margin: 15px 0 8px 0;
+      padding-bottom: 5px;
+      border-bottom: 2px solid var(--primary);
+    }
+
+    .section-title h4 {
+      margin: 0;
+      color: var(--primary);
+      font-size: 0.95rem;
+    }
+
+    .highlight {
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .bullet-point, .numbered-point {
+      color: var(--primary);
+      font-weight: bold;
+      margin-right: 8px;
+    }
+
+    .message-footer {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .action-btn.small {
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--glass-border);
+      cursor: pointer;
+      color: var(--text-main);
+      border-radius: 6px;
+      transition: all 0.3s;
+    }
+
+    .action-btn.small:hover {
+      background: rgba(99, 102, 241, 0.2);
+    }
+
+    .suggestions-container {
+      padding: 15px;
+      border-top: 1px solid var(--glass-border);
+      background: rgba(15, 23, 42, 0.5);
+    }
+
+    .suggestions-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .suggestions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .suggestion-card {
+      padding: 12px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      color: var(--text-main);
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.8rem;
+      border: none;
+    }
+
+    .suggestion-card:hover {
+      background: rgba(99, 102, 241, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .suggestion-card i {
+      color: var(--primary);
+      font-size: 0.9rem;
+      margin-top: 2px;
+    }
+
+    /* Feedback Section */
+    .feedback-section {
+      margin-top: 60px;
+      padding-top: 40px;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .btn-feedback {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      color: white;
+      padding: 14px 28px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-feedback:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Notification System -->
+  <div id="notification" class="notification">
+    <i id="notificationIcon" class="fas fa-info-circle"></i>
+    <span id="notificationText">Notification message</span>
+  </div>
+
+  <!-- Timer Widget -->
+  <div class="timer-container">
+    <button class="timer-btn" id="timerToggle">
+      <i class="fas fa-clock"></i>
+    </button>
+    
+    <div class="timer-window" id="timerWindow">
+      <div class="timer-header">
+        <h3><i class="fas fa-stopwatch"></i> Workout Timer</h3>
+        <button class="timer-close" id="timerClose">&times;</button>
+      </div>
+      
+      <div class="timer-content">
+        <div class="timer-display" id="timerDisplay">03:00</div>
+        
+        <div class="timer-controls">
+          <button class="timer-start" id="timerStart">
+            <i class="fas fa-play"></i> Start
+          </button>
+          <button class="timer-pause" id="timerPause">
+            <i class="fas fa-pause"></i> Pause
+          </button>
+          <button class="timer-reset" id="timerReset">
+            <i class="fas fa-redo"></i> Reset
+          </button>
+        </div>
+        
+        <div class="timer-presets">
+          <div class="timer-preset" data-time="60">1:00 min</div>
+          <div class="timer-preset" data-time="90">1:30 min</div>
+          <div class="timer-preset" data-time="120">2:00 min</div>
+          <div class="timer-preset" data-time="150">2:30 min</div>
+          <div class="timer-preset active" data-time="180">3:00 min</div>
+          <div class="timer-preset" data-time="45">0:45 sec</div>
+        </div>
+        
+        <div style="margin-top: 15px; font-size: 0.8rem; color: var(--text-muted);">
+          <i class="fas fa-info-circle"></i> Max rest time between sets: 3 minutes
+        </div>
+      </div>
+    </div>
+  </div>
+<!-- Advanced Chatbot Container -->
+<div class="chatbot-container">
+  <button class="chatbot-btn" id="chatbotToggle">
+    <i class="fas fa-dumbbell"></i>
+  </button>
+  
+  <div class="chatbot-window" id="chatbotWindow">
+    <div class="chatbot-header" id="chatbotHeader">
+      <h3><i class="fas fa-robot"></i> AI Fitness Coach</h3>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span id="chatbotStatus" class="api-status offline" style="font-size: 0.6rem; padding: 2px 8px;">
+          <i class="fas fa-circle" style="font-size: 0.5rem;"></i> Initializing...
+        </span>
+        <button class="chatbot-close" id="chatbotClose">&times;</button>
+      </div>
+    </div>
+    
+    <div class="chatbot-messages" id="chatbotMessages">
+      <!-- Messages will be loaded here -->
+    </div>
+    
+    <div class="typing-indicator" id="typingIndicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+    
+    <div class="chatbot-input">
+      <input type="text" id="chatbotInput" placeholder="Ask me anything about fitness, nutrition, or workouts..." autocomplete="off">
+      <button id="chatbotSend"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+  <div class="container">
+    <header>
+      <div class="brand-badge">Elite Protocol v3.5 | AI Enhanced</div>
+      <h1>GYM PLANNER <span class="camtech-text">CAMTECH</span></h1>
+      <!-- Simple Disclaimer Banner -->
+<div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 15px; margin: 20px auto 30px auto; max-width: 800px; text-align: center;">
+  <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px;">
+    <i class="fas fa-exclamation-triangle" style="color: var(--danger); font-size: 1.2rem;"></i>
+    <h3 style="color: var(--danger); margin: 0; font-size: 1rem;">IMPORTANT DISCLAIMER</h3>
+  </div>
+  
+  <p style="color: var(--text-main); margin: 0 0 10px 0; font-size: 0.85rem; line-height: 1.5;">
+    <strong>GYM PLANNER CAMTECH</strong> is for informational purposes only. 
+    <span style="color: var(--danger); font-weight: 600;">NOT medical advice.</span> 
+    It is recommended to consult a gym coach before starting.
+  </p>
+  
+  <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; font-size: 0.75rem;">
+    <span style="color: var(--text-muted);">
+      <i class="fas fa-user-md"></i> Consult professionals
+    </span>
+    <span style="color: var(--text-muted);">
+      <i class="fas fa-ban"></i> Not responsible for any injuries
+    </span>
+    <span style="color: var(--text-muted);">
+      <i class="fas fa-brain"></i> AI may generate errors
+    </span>
+  </div>
+</div>
+      <div class="preset-row">
+          <button class="preset-btn" onclick="applyPreset('Male', 25, 'Advanced', 'Build muscle', 'Chest')">
+            <i class="fas fa-fire"></i> Pro Bulk
+          </button>
+          <button class="preset-btn" onclick="applyPreset('Female', 24, 'Intermediate', 'Lose fat', 'Full body')">
+            <i class="fas fa-bolt"></i> Shred Mode
+          </button>
+          <button class="preset-btn" onclick="applyPreset('Male', 30, 'New', 'Stay fit', 'Legs')">
+            <i class="fas fa-heart"></i> Daily Health
+          </button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <div class="section-header">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-user-gear"></i>
+            <h2>Configuration</h2>
+          </div>
+          <div id="apiStatus" class="api-status offline">Checking APIs...</div>
+        </div>
+        
+        <div class="form-group">
+          <label>Gender</label>
+          <select id="gender">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Prefer not to say">Prefer not to say</option>
+          </select>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age <span style="color: var(--danger)">*</span></label>
+            <input type="number" id="age" value="25" min="13" max="70" required>
+            <div class="error-message" id="ageError">Age must be between 13-70</div>
+          </div>
+          <div class="form-group">
+            <label>Weight (kg) <span style="color: var(--danger)">*</span></label>
+            <input type="number" id="weight" value="70" min="40" max="200" required>
+            <div class="error-message" id="weightError">Weight must be between 40-200kg</div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Height (cm) <span style="color: var(--danger)">*</span></label>
+            <input type="number" id="height" value="175" min="100" max="250" required>
+            <div class="error-message" id="heightError">Height must be between 100-250cm</div>
+          </div>
+          <div class="form-group">
+            <label>Workouts/Week</label>
+            <select id="workoutsPerWeek">
+              <option value="2">2 days</option>
+              <option value="3" selected>3 days</option>
+              <option value="4">4 days</option>
+              <option value="5">5 days</option>
+              <option value="6">6 days</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Activity Level</label>
+            <select id="activity">
+              <option value="1.2">Sedentary</option>
+              <option value="1.375">Lightly Active</option>
+              <option value="1.55" selected>Moderately Active</option>
+              <option value="1.725">Very Active</option>
+              <option value="1.9">Extremely Active</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Experience</label>
+            <select id="level">
+              <option value="New">New to Gym</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Intensity</label>
+          <select id="intensityMod">
+            <option value="1">Standard</option>
+            <option value="1.2">Hardcore (+20%)</option>
+            <option value="0.8">Recovery (-20%)</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Goal</label>
+          <select id="goal">
+            <option value="Build muscle">Build Muscle</option>
+            <option value="Lose fat">Lose Fat</option>
+            <option value="Stay fit">Stay Fit & Toned</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Focus Area</label>
+          <select id="focus">
+            <option value="Chest">Chest</option>
+            <option value="Back">Back</option>
+            <option value="Legs">Legs</option>
+            <option value="Arms">Arms</option>
+            <option value="Shoulders">Shoulders</option>
+            <option value="Full body">Full Body</option>
+          </select>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-generate" onclick="getRecommendation()">
+            <span id="generateText">GENERATE PROTOCOL</span>
+            <i class="fas fa-bolt"></i>
+          </button>
+          <button id="downloadBtn" class="btn btn-download" onclick="downloadPDF()">
+            DOWNLOAD FULL PDF <i class="fas fa-file-pdf"></i>
+          </button>
+          <button class="btn btn-api" onclick="getLocationForWeather()" id="weatherBtn">
+            <i class="fas fa-cloud-sun"></i> GET WEATHER INFO
+          </button>
+          <button class="btn btn-spotify" onclick="showSpotifyPlayer()" id="spotifyBtn">
+            <i class="fab fa-spotify"></i> SPOTIFY WORKOUT MUSIC
+          </button>
+          <button class="btn btn-timer" onclick="toggleTimer()" id="timerBtn">
+            <i class="fas fa-stopwatch"></i> OPEN WORKOUT TIMER
+          </button>
+        </div>
+
+        <div class="api-loading" id="apiLoading">
+          <i class="fas fa-spinner"></i> Fetching data from APIs...
+        </div>
+
+        <div class="config-progress" style="margin-top: 20px;">
+          <div class="config-fill" id="configProgress" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card" style="min-height: 520px;">
+          <div class="section-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i class="fas fa-clipboard-check"></i>
+              <h2>Personalized Protocol</h2>
+            </div>
+            <button class="btn" style="padding: 8px 16px; font-size: 0.8rem; width: auto;" onclick="refreshAPIData()" id="refreshBtn">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+          
+          <div id="result">
+            <div style="text-align: center; padding-top: 100px; color: var(--text-muted);">
+              <i class="fas fa-dumbbell" style="font-size: 3rem; opacity: 0.1; margin-bottom: 20px;"></i>
+              <p>Configure parameters to see your full routine.</p>
+              <p style="font-size: 0.8rem; margin-top: 10px;">APIs will provide exercise videos & nutrition info</p>
+            </div>
+          </div>
+          <div id="quoteBox" class="quote-box" style="display:none;"></div>
+        </div>
+
+        <div class="stats-bar" id="statsContainer" style="display: none;">
+          <div class="stat-card"><span class="stat-num" id="totalExercises">0</span><span class="stat-lab">Exercises</span></div>
+          <div class="stat-card"><span class="stat-num" id="workoutDuration">0m</span><span class="stat-lab">Duration</span></div>
+          <div class="stat-card"><span class="stat-num" id="intensityLevel">-</span><span class="stat-lab">Intensity</span></div>
+        </div>
+
+        <div class="history-card" id="historyCard">
+          <h3 style="font-size: 0.85rem; color: var(--text-muted);">
+            <i class="fas fa-history"></i> RECENT LOG
+          </h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Goal</th>
+                <th>Focus</th>
+                <th>Level</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Feedback Section -->
+    <div class="feedback-section">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <div style="background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 32px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+          <div class="section-header" style="border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; margin-bottom: 25px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <i class="fas fa-comment-alt" style="color: var(--accent);"></i>
+              <h2 style="margin: 0; font-size: 1.5rem;">Share Your Feedback</h2>
+            </div>
+            <div style="background: rgba(16, 185, 129, 0.2); color: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">
+              <i class="fas fa-heart"></i> We Value You
+            </div>
+          </div>
+          
+          <p style="color: var(--text-muted); margin-bottom: 25px; font-size: 0.95rem; line-height: 1.6;">
+            Help us improve <strong style="color: var(--primary);">GYM PLANNER CAMTECH</strong>! Your feedback is essential for making 
+            our tool better for everyone. Share your experience, suggestions, or report any issues.
+          </p>
+          
+          <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 25px;">
+            <div style="display: flex; align-items: flex-start; gap: 15px; margin-bottom: 15px;">
+              <div style="background: var(--primary); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i class="fas fa-clipboard-list"></i>
+              </div>
+              <div>
+                <h3 style="margin: 0 0 5px 0; color: var(--text-main); font-size: 1.1rem;">Quick Feedback Form</h3>
+                <p style="color: var(--text-muted); margin: 0; font-size: 0.9rem;">
+                  Takes only 2-3 minutes to complete. Anonymous responses welcome.
+                </p>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+              <a href="https://forms.gle/gTDc68jrxbr1U3XZ7" 
+                 target="_blank" 
+                 class="btn-feedback">
+                <i class="fab fa-google"></i>
+                Open Google Form
+                <i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i>
+              </a>
+              
+              <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 10px;">
+                <i class="fas fa-lock" style="color: var(--accent);"></i> Your responses are secure and confidential
+              </p>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 25px;">
+            <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <i class="fas fa-lightbulb" style="color: var(--warning);"></i>
+                <h4 style="margin: 0; font-size: 0.9rem; color: var(--text-main);">Suggest Features</h4>
+              </div>
+              <p style="color: var(--text-muted); margin: 0; font-size: 0.8rem;">
+                What new features would you like to see?
+              </p>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <i class="fas fa-bug" style="color: var(--danger);"></i>
+                <h4 style="margin: 0; font-size: 0.9rem; color: var(--text-main);">Report Issues</h4>
+              </div>
+              <p style="color: var(--text-muted); margin: 0; font-size: 0.8rem;">
+                Found a bug or something not working right?
+              </p>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <i class="fas fa-star" style="color: var(--accent);"></i>
+                <h4 style="margin: 0; font-size: 0.9rem; color: var(--text-main);">Share Experience</h4>
+              </div>
+              <p style="color: var(--text-muted); margin: 0; font-size: 0.8rem;">
+                How has CAMTECH helped your fitness journey?
+              </p>
+            </div>
+          </div>
+          
+          <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--glass-border); text-align: center;">
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">
+              <i class="fas fa-envelope" style="color: var(--primary); margin-right: 5px;"></i>
+              Prefer email? Contact us at: <span style="color: var(--accent);">support@camtechgym.com</span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <script>
+    // ================ GLOBAL VARIABLES ================
+    let currentProtocolText = "";
+    let currentExercises = [];
+    let currentSchedule = [];
+    let currentNutrition = null;
+    let historyLog = JSON.parse(localStorage.getItem('camtechHistory')) || [];
+    let timerSeconds = 180;
+    let isTimerRunning = false;
+    let timerInterval = null;
+    let apiStatus = { weather: false, quotes: false };
+    let chatHistory = [];
+    let conversationContext = {};
+    let isChatbotProcessing = false;
+
+    
+    // ================ ADVANCED API CONFIGURATION ================
+// 🔐 SECURE API KEYS (Replace with your actual keys)
+const WEATHER_API_KEY = '6027ecc1707f4d192ebdcb11b09a5b4f'; // Get from https://openweathermap.org/api
+const OPENAI_API_KEY = 'sk-0a15c5c9d22d4e86a711f1476b3b9721'; // Get from https://platform.openai.com/api-keys
+const OPENAI_MODEL = 'gpt-4-turbo-preview'; // or 'gpt-3.5-turbo' for faster responses
+const AI_CONFIG = {
+    model: OPENAI_MODEL,
+    temperature: 0.7,
+    maxTokens: 1000,
+    presence_penalty: 0,
+    frequency_penalty: 0,
+    stream: false
+};
+
+// Advanced Features Configuration
+const ADVANCED_FEATURES = {
+    realTimeAnalysis: true,
+    progressiveOverloadTracking: true,
+    nutritionPlanning: true,
+    injuryPrevention: true,
+    formCorrection: true,
+    recoveryOptimization: true
+};
+    
+    // Fallback data for when APIs are unavailable
+    const FALLBACK_DATA = {
+      exercises: {
+        'chest': ['Bench Press', 'Push-ups', 'Chest Flyes', 'Incline Dumbbell Press', 'Cable Crossovers'],
+        'back': ['Pull-ups', 'Deadlifts', 'Bent Over Rows', 'Lat Pulldowns', 'Face Pulls'],
+        'legs': ['Squats', 'Lunges', 'Leg Press', 'Calf Raises', 'Leg Extensions'],
+        'arms': ['Bicep Curls', 'Tricep Dips', 'Hammer Curls', 'Tricep Pushdowns', 'Skull Crushers'],
+        'shoulders': ['Overhead Press', 'Lateral Raises', 'Front Raises', 'Face Pulls', 'Shrugs'],
+        'full body': ['Burpees', 'Thrusters', 'Kettlebell Swings', 'Mountain Climbers', 'Box Jumps']
+      },
+      youtubeLinks: {
+        'Bench Press': 'https://youtu.be/rT7DgCr-3pg',
+        'Squats': 'https://youtu.be/aclHkVaku9U',
+        'Deadlifts': 'https://youtu.be/op9kVnSso6Q',
+        'Pull-ups': 'https://youtu.be/eGo4IYlbE5g',
+        'Push-ups': 'https://youtu.be/IODxDxX7oi4'
+      },
+      spotifyPlaylists: [
+        {
+          name: "Life hurt Phonk hurt even more",
+          description: "High energy for lifting",
+          embedUrl: "https://open.spotify.com/embed/playlist/0MZJED3nLSlWPr8iiA82gV",
+          color: "#1DB954"
+        },
+        {
+          name: "Different Taste",
+          description: "For someone who didn't like music only",
+          embedUrl: "https://open.spotify.com/embed/playlist/0Bv4CaZ8Ho2BTZjRimtouH",
+          color: "#10b981"
+        },
+        {
+          name: "Cas",
+          description: "For yoga/stretching",
+          embedUrl: "https://open.spotify.com/embed/playlist/4KSf2rurSxt5YQI7COTfqY",
+          color: "#8b5cf6"
+        }
+      ]
+    };
+
+    // ================ INITIALIZATION ================
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Initializing GYM PLANNER CAMTECH...');
+      initializeApp();
+    });
+
+    function initializeApp() {
+      checkAPIs();
+      loadHistory();
+      setupEventListeners();
+      updateConfigProgress();
+      initializeTimer();
+      showNotification('CAMTECH Gym Planner loaded successfully!', 'success');
+      
+      // Update progress bar based on form completion
+      const inputs = document.querySelectorAll('input, select');
+      inputs.forEach(input => {
+        input.addEventListener('change', updateConfigProgress);
+        input.addEventListener('input', updateConfigProgress);
+      });
+    }
+
+    function updateConfigProgress() {
+      const requiredFields = ['age', 'weight', 'height', 'gender', 'level', 'goal', 'focus'];
+      let completed = 0;
+      
+      requiredFields.forEach(field => {
+        const element = document.getElementById(field);
+        if (element && element.value && element.value.trim() !== '') {
+          completed++;
+        }
+      });
+      
+      const progress = (completed / requiredFields.length) * 100;
+      document.getElementById('configProgress').style.width = `${progress}%`;
+    }
+
+    // ================ EVENT LISTENERS ================
+    function setupEventListeners() {
+      // Timer event listeners
+      document.getElementById('timerToggle').addEventListener('click', toggleTimer);
+      document.getElementById('timerClose').addEventListener('click', closeTimer);
+      document.getElementById('timerStart').addEventListener('click', startTimer);
+      document.getElementById('timerPause').addEventListener('click', pauseTimer);
+      document.getElementById('timerReset').addEventListener('click', resetTimer);
+      
+      // Timer preset buttons
+      document.querySelectorAll('.timer-preset').forEach(button => {
+        button.addEventListener('click', function() {
+          setTimerPreset(parseInt(this.dataset.time));
+          document.querySelectorAll('.timer-preset').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+      
+      // Form validation
+      document.getElementById('age').addEventListener('input', validateAge);
+      document.getElementById('weight').addEventListener('input', validateWeight);
+      document.getElementById('height').addEventListener('input', validateHeight);
+      
+      // Chatbot event listeners
+      document.getElementById('chatbotToggle').addEventListener('click', toggleChatbot);
+      document.getElementById('chatbotClose').addEventListener('click', closeChatbot);
+      document.getElementById('chatbotSend').addEventListener('click', sendChatMessage);
+      document.getElementById('chatbotInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendChatMessage();
+        }
+      });
+      
+      // Initialize chatbot
+      initializeChatbot();
+    }
+
+    function closeChatbot() {
+      document.getElementById('chatbotWindow').style.display = 'none';
+    }
+
+    function closeTimer() {
+      document.getElementById('timerWindow').style.display = 'none';
+    }
+
+    // ================ FORM VALIDATION ================
+    function validateAge() {
+      const age = parseInt(document.getElementById('age').value);
+      const error = document.getElementById('ageError');
+      if (age < 13 || age > 70 || isNaN(age)) {
+        error.style.display = 'block';
+        return false;
+      } else {
+        error.style.display = 'none';
+        return true;
+      }
+    }
+
+    function validateWeight() {
+      const weight = parseInt(document.getElementById('weight').value);
+      const error = document.getElementById('weightError');
+      if (weight < 40 || weight > 200 || isNaN(weight)) {
+        error.style.display = 'block';
+        return false;
+      } else {
+        error.style.display = 'none';
+        return true;
+      }
+    }
+
+    function validateHeight() {
+      const height = parseInt(document.getElementById('height').value);
+      const error = document.getElementById('heightError');
+      if (height < 100 || height > 250 || isNaN(height)) {
+        error.style.display = 'block';
+        return false;
+      } else {
+        error.style.display = 'none';
+        return true;
+      }
+    }
+
+    function validateForm() {
+      return validateAge() && validateWeight() && validateHeight();
+    }
+
+    // ================ NOTIFICATION SYSTEM ================
+    function showNotification(message, type = 'info') {
+      const notification = document.getElementById('notification');
+      const icon = document.getElementById('notificationIcon');
+      const text = document.getElementById('notificationText');
+      
+      notification.className = `notification ${type}`;
+      text.textContent = message;
+      
+      switch(type) {
+        case 'success':
+          icon.className = 'fas fa-check-circle';
+          icon.style.color = 'var(--accent)';
+          break;
+        case 'error':
+          icon.className = 'fas fa-exclamation-circle';
+          icon.style.color = 'var(--danger)';
+          break;
+        case 'warning':
+          icon.className = 'fas fa-exclamation-triangle';
+          icon.style.color = 'var(--warning)';
+          break;
+        default:
+          icon.className = 'fas fa-info-circle';
+          icon.style.color = 'var(--primary)';
+      }
+      
+      notification.style.display = 'flex';
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 4000);
+    }
+
+    // ================ API FUNCTIONS ================
+    async function checkAPIs() {
+      const statusElement = document.getElementById('apiStatus');
+      
+      // Check weather API
+      try {
+        if (WEATHER_API_KEY && WEATHER_API_KEY !== 'YOUR_OPENWEATHERMAP_API_KEY') {
+          await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=London&appid=${WEATHER_API_KEY}`, { timeout: 3000 });
+          apiStatus.weather = true;
+        } else {
+          apiStatus.weather = false;
+        }
+      } catch (error) {
+        apiStatus.weather = false;
+      }
+      
+      // Check quotes API
+      try {
+        await axios.get('https://type.fit/api/quotes', { timeout: 3000 });
+        apiStatus.quotes = true;
+      } catch (error) {
+        apiStatus.quotes = false;
+      }
+      
+      // Update status display
+      const onlineCount = Object.values(apiStatus).filter(Boolean).length;
+      
+      if (onlineCount >= 2) {
+        statusElement.textContent = `API: ${onlineCount}/2 Connected`;
+        statusElement.className = 'api-status online';
+      } else {
+        statusElement.textContent = 'API: Offline Mode';
+        statusElement.className = 'api-status offline';
+        showNotification('Running in offline mode with local data', 'info');
+      }
+    }
+
+    async function getExercisesFromAPI(bodyPart) {
+      const bodyPartLower = bodyPart.toLowerCase();
+      
+      // Use fallback data if API key is not available
+      if (!WEATHER_API_KEY || WEATHER_API_KEY === 'YOUR_OPENWEATHERMAP_API_KEY') {
+        const exercises = FALLBACK_DATA.exercises[bodyPartLower] || FALLBACK_DATA.exercises['full body'];
+        return exercises.slice(0, 6);
+      }
+      
+      try {
+        // Try to get exercises from WGER API
+        const response = await axios.get(
+          `https://wger.de/api/v2/exercise/?language=2&limit=20`,
+          { timeout: 5000 }
+        );
+        
+        if (response.data && response.data.results) {
+          // Filter exercises by body part
+          const filteredExercises = response.data.results
+            .filter(ex => {
+              const name = ex.name.toLowerCase();
+              const description = ex.description ? ex.description.toLowerCase() : '';
+              return name.includes(bodyPartLower) || description.includes(bodyPartLower);
+            })
+            .map(ex => ex.name);
+          
+          if (filteredExercises.length > 0) {
+            return filteredExercises.slice(0, 6);
+          }
+        }
+      } catch (error) {
+        console.log('Exercise API error, using fallback:', error.message);
+      }
+      
+      // Use fallback data
+      const exercises = FALLBACK_DATA.exercises[bodyPartLower] || FALLBACK_DATA.exercises['full body'];
+      return exercises.slice(0, 6);
+    }
+
+    async function getMotivationalQuote() {
+      try {
+        const response = await axios.get('https://type.fit/api/quotes', {
+          timeout: 3000
+        });
+        
+        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+          const randomQuote = response.data[Math.floor(Math.random() * response.data.length)];
+          return randomQuote.text || "Stay consistent, stay strong!";
+        }
+      } catch (error) {
+        console.log('Quotes API error, using fallback:', error);
+      }
+      
+      // Fallback quotes
+      const fallbackQuotes = [
+        "The only bad workout is the one that didn't happen.",
+        "Consistency beats intensity every time.",
+        "Stronger than yesterday, weaker than tomorrow.",
+        "Your body can stand almost anything. It's your mind you have to convince.",
+        "Don't wish for a good body, work for it."
+      ];
+      
+      return fallbackQuotes[Math.floor(Math.random() * fallbackQuotes.length)];
+    }
+
+    // ================ NUTRITION CALCULATOR ================
+    function calculateNutrition() {
+      if (!validateForm()) {
+        showNotification('Please fix form errors first', 'error');
+        return null;
+      }
+
+      const weight = parseFloat(document.getElementById('weight').value) || 70;
+      const height = parseFloat(document.getElementById('height').value) || 175;
+      const age = parseFloat(document.getElementById('age').value) || 25;
+      const gender = document.getElementById('gender').value;
+      const activity = parseFloat(document.getElementById('activity').value) || 1.55;
+      const goal = document.getElementById('goal').value;
+      
+      // Calculate BMR using Mifflin-St Jeor Equation
+      let bmr;
+      if (gender === 'Male') {
+        bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+      } else if (gender === 'Female') {
+        bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+      } else {
+        // For "Prefer not to say" - use average
+        bmr = ((10 * weight + 6.25 * height - 5 * age + 5) + 
+               (10 * weight + 6.25 * height - 5 * age - 161)) / 2;
+      }
+      
+      // Calculate TDEE
+      const tdee = bmr * activity;
+      
+      // Adjust for goal
+      let targetCalories;
+      let proteinMult, fatMult;
+      
+      switch(goal) {
+        case 'Build muscle':
+          targetCalories = tdee * 1.1;
+          proteinMult = 2.2;
+          fatMult = 0.8;
+          break;
+        case 'Lose fat':
+          targetCalories = tdee * 0.85;
+          proteinMult = 2.4;
+          fatMult = 0.7;
+          break;
+        default:
+          targetCalories = tdee;
+          proteinMult = 1.8;
+          fatMult = 0.8;
+      }
+      
+      // Calculate macros
+      const proteinGrams = Math.round((weight * proteinMult));
+      const fatGrams = Math.round((weight * fatMult));
+      const proteinCal = proteinGrams * 4;
+      const fatCal = fatGrams * 9;
+      const carbCal = targetCalories - proteinCal - fatCal;
+      const carbGrams = Math.round(carbCal / 4);
+      
+      currentNutrition = {
+        calories: Math.round(targetCalories),
+        protein: proteinGrams,
+        carbs: carbGrams,
+        fat: fatGrams,
+        tdee: Math.round(tdee)
+      };
+      
+      return currentNutrition;
+    }
+
+    // ================ WORKOUT SCHEDULE ================
+    function generateWorkoutSchedule() {
+      const workoutsPerWeek = parseInt(document.getElementById('workoutsPerWeek').value) || 3;
+      let schedule = [];
+      
+      if (workoutsPerWeek === 2) {
+        schedule = ['Mon', 'Thu'];
+      } else if (workoutsPerWeek === 3) {
+        schedule = ['Mon', 'Wed', 'Fri'];
+      } else if (workoutsPerWeek === 4) {
+        schedule = ['Mon', 'Tue', 'Thu', 'Fri'];
+      } else if (workoutsPerWeek === 5) {
+        schedule = ['Mon', 'Tue', 'Wed', 'Fri', 'Sat'];
+      } else if (workoutsPerWeek === 6) {
+        schedule = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      }
+      
+      currentSchedule = schedule;
+      return schedule;
+    }
+
+    // ================ WEATHER FUNCTIONS ================
+    async function getLocationForWeather() {
+      const weatherBtn = document.getElementById('weatherBtn');
+      const originalHTML = weatherBtn.innerHTML;
+      
+      weatherBtn.disabled = true;
+      weatherBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting weather...';
+      
+      // Show loading
+      const resultDiv = document.getElementById('result');
+      const loadingHTML = `
+        <div class="weather-info fade-in">
+          <div class="weather-title">
+            <i class="fas fa-cloud-sun"></i> Fetching Weather Data
+          </div>
+          <div style="text-align: center; padding: 20px;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #3b82f6;"></i>
+            <p style="margin-top: 10px;">Getting your location and weather data...</p>
+          </div>
+        </div>
+      `;
+      
+      resultDiv.innerHTML = loadingHTML + resultDiv.innerHTML;
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            try {
+              const weather = await getWeather(position.coords.latitude, position.coords.longitude);
+              displayWeatherInfo(weather);
+              showNotification('Weather data loaded!', 'success');
+            } catch (error) {
+              console.error('Weather fetch error:', error);
+              displayWeatherInfo(getFallbackWeatherData());
+              showNotification('Could not fetch weather. Using simulated data.', 'warning');
+            }
+            weatherBtn.disabled = false;
+            weatherBtn.innerHTML = originalHTML;
+          },
+          (error) => {
+            console.error('Geolocation error:', error);
+            displayWeatherInfo(getFallbackWeatherData());
+            showNotification('Location access denied. Using simulated data.', 'info');
+            weatherBtn.disabled = false;
+            weatherBtn.innerHTML = originalHTML;
+          }
+        );
+      } else {
+        displayWeatherInfo(getFallbackWeatherData());
+        showNotification('Geolocation not supported. Using simulated data.', 'info');
+        weatherBtn.disabled = false;
+        weatherBtn.innerHTML = originalHTML;
+      }
+    }
+
+    async function getWeather(lat, lon) {
+      if (!WEATHER_API_KEY || WEATHER_API_KEY === 'YOUR_OPENWEATHERMAP_API_KEY') {
+        return getFallbackWeatherData();
+      }
+      
+      try {
+        const response = await axios.get(
+          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${WEATHER_API_KEY}`,
+          { timeout: 5000 }
+        );
+        
+        if (response.data && response.data.main) {
+          const data = response.data;
+          return {
+            temp: Math.round(data.main.temp),
+            feelsLike: Math.round(data.main.feels_like),
+            humidity: data.main.humidity,
+            description: data.weather[0].description,
+            windSpeed: Math.round(data.wind.speed * 3.6),
+            city: data.name,
+            country: data.sys.country,
+            icon: `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`,
+            realData: true
+          };
+        }
+      } catch (error) {
+        console.error('Weather API error:', error);
+      }
+      
+      return getFallbackWeatherData();
+    }
+
+    function getFallbackWeatherData() {
+      const now = new Date();
+      const hour = now.getHours();
+      
+      // Generate realistic weather based on time
+      let baseTemp = 22;
+      let condition = 'Partly Cloudy';
+      
+      if (hour >= 20 || hour <= 6) { // Night
+        baseTemp = 16;
+        condition = 'Clear';
+      } else if (hour >= 6 && hour <= 12) { // Morning
+        baseTemp = 20;
+        condition = 'Sunny';
+      } else if (hour >= 12 && hour <= 18) { // Afternoon
+        baseTemp = 25;
+        condition = 'Partly Cloudy';
+      }
+      
+      return {
+        temp: baseTemp + Math.floor(Math.random() * 5) - 2,
+        feelsLike: baseTemp + Math.floor(Math.random() * 3) - 1,
+        humidity: 40 + Math.floor(Math.random() * 30),
+        description: condition,
+        windSpeed: 5 + Math.floor(Math.random() * 15),
+        city: 'Your Location',
+        country: '--',
+        icon: `https://openweathermap.org/img/wn/01d@2x.png`,
+        realData: false
+      };
+    }
+
+    function displayWeatherInfo(weather) {
+      const resultDiv = document.getElementById('result');
+      
+      const weatherHTML = `
+        <div class="weather-info fade-in">
+          <div class="weather-title">
+            <i class="fas fa-cloud-sun"></i> Current Weather
+            ${!weather.realData ? '<span style="margin-left: 10px; font-size: 0.7rem; background: rgba(245, 158, 11, 0.2); color: var(--warning); padding: 2px 8px; border-radius: 10px;">Demo Data</span>' : ''}
+          </div>
+          
+          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+            <div style="flex-shrink: 0;">
+              <img src="${weather.icon}" alt="${weather.description}" style="width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 10px;">
+            </div>
+            <div style="flex: 1;">
+              <div style="font-size: 1.5rem; font-weight: 800; color: white; margin-bottom: 5px;">
+                ${weather.temp}°C
+                <span style="font-size: 0.9rem; color: var(--text-muted); margin-left: 5px;">
+                  Feels like ${weather.feelsLike}°C
+                </span>
+              </div>
+              <div style="font-size: 1rem; color: var(--text-main); margin-bottom: 5px;">
+                ${weather.description.charAt(0).toUpperCase() + weather.description.slice(1)}
+              </div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">
+                ${weather.city}, ${weather.country}
+              </div>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
+            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; text-align: center;">
+              <div style="font-size: 0.7rem; color: var(--text-muted);">Humidity</div>
+              <div style="font-size: 1rem; font-weight: 600; color: #3b82f6;">${weather.humidity}%</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; text-align: center;">
+              <div style="font-size: 0.7rem; color: var(--text-muted);">Wind</div>
+              <div style="font-size: 1rem; font-weight: 600; color: #3b82f6;">${weather.windSpeed} km/h</div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Replace existing weather info or add new
+      const existingWeather = resultDiv.querySelector('.weather-info');
+      if (existingWeather) {
+        existingWeather.outerHTML = weatherHTML;
+      } else {
+        resultDiv.innerHTML = weatherHTML + resultDiv.innerHTML;
+      }
+    }
+
+    // ================ DISPLAY FUNCTIONS ================
+    function displayExerciseVideos(exercises) {
+      let videosHTML = '';
+      
+      exercises.slice(0, 3).forEach(exercise => {
+        const videoLink = FALLBACK_DATA.youtubeLinks[exercise] || 
+          `https://www.youtube.com/results?search_query=${encodeURIComponent(exercise + ' workout tutorial')}`;
+        
+        videosHTML += `
+          <div class="exercise-video fade-in">
+            <div class="video-title">
+              <i class="fas fa-play-circle"></i> ${exercise} - Form Guide
+            </div>
+            <a href="${videoLink}" target="_blank" class="video-link">
+              <i class="fab fa-youtube"></i> Watch tutorial on YouTube
+            </a>
+          </div>
+        `;
+      });
+      
+      return videosHTML;
+    }
+
+    function displayNutritionInfo(nutrition) {
+      return `
+        <div class="nutrition-info fade-in">
+          <div class="nutrition-title">
+            <i class="fas fa-utensils"></i> Daily Nutrition Targets
+          </div>
+          <div>Based on your profile, here are your daily targets:</div>
+          <div class="macro-row">
+            <div class="macro-item">
+              <div class="macro-value">${nutrition.calories}</div>
+              <div class="macro-label">CALORIES</div>
+            </div>
+            <div class="macro-item">
+              <div class="macro-value">${nutrition.protein}g</div>
+              <div class="macro-label">PROTEIN</div>
+            </div>
+            <div class="macro-item">
+              <div class="macro-value">${nutrition.carbs}g</div>
+              <div class="macro-label">CARBS</div>
+            </div>
+            <div class="macro-item">
+              <div class="macro-value">${nutrition.fat}g</div>
+              <div class="macro-label">FAT</div>
+            </div>
+          </div>
+          <div style="margin-top: 10px; font-size: 0.8rem; color: var(--text-muted);">
+            Maintenance: ${nutrition.tdee} calories | Adjust based on progress
+          </div>
+        </div>
+      `;
+    }
+
+    function displayWorkoutSchedule(schedule) {
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      
+      return `
+        <div class="workout-schedule fade-in">
+          <div class="schedule-title">
+            <i class="fas fa-calendar-alt"></i> Weekly Workout Schedule (${schedule.length} days/week)
+          </div>
+          <div>Recommended workout days:</div>
+          <div class="schedule-days">
+            ${days.map(day => `
+              <div class="day-pill ${schedule.includes(day) ? 'active' : ''}">
+                ${day}
+              </div>
+            `).join('')}
+          </div>
+          <div style="margin-top: 10px; font-size: 0.8rem; color: var(--text-muted);">
+            Rest days are crucial for recovery and muscle growth
+          </div>
+        </div>
+      `;
+    }
+
+    // ================ MAIN RECOMMENDATION FUNCTION ================
+    async function getRecommendation() {
+      if (!validateForm()) {
+        showNotification('Please fix the form errors before generating', 'error');
+        return;
+      }
+
+      const generateBtn = document.querySelector('.btn-generate');
+      const generateText = document.getElementById('generateText');
+      const apiLoading = document.getElementById('apiLoading');
+      const refreshBtn = document.getElementById('refreshBtn');
+      
+      // Show loading state
+      generateBtn.disabled = true;
+      if (refreshBtn) refreshBtn.disabled = true;
+      generateText.textContent = 'FETCHING DATA...';
+      apiLoading.style.display = 'block';
+      
+      // Clear previous results
+      document.getElementById('result').innerHTML = '';
+      
+      try {
+        const age = parseInt(document.getElementById('age').value) || 25;
+        const level = document.getElementById('level').value || 'Intermediate';
+        const goal = document.getElementById('goal').value || 'Build muscle';
+        const focus = document.getElementById('focus').value || 'Chest';
+        const mod = parseFloat(document.getElementById('intensityMod').value) || 1;
+        const workoutsPerWeek = parseInt(document.getElementById('workoutsPerWeek').value) || 3;
+        
+        let rec = "";
+        let count = 0; 
+        let dur = 0; 
+        let intensity = "";
+
+        // Get exercises
+        const exercises = await getExercisesFromAPI(focus);
+        currentExercises = exercises;
+        
+        rec = "🔥 PHASE 1: WARM-UP\n• 5-10 min light cardio\n• Dynamic stretching\n\n";
+        let sets = Math.round(3 * mod);
+        
+        if (goal === "Build muscle") {
+          rec += `💪 PHASE 2: HYPERTROPHY (${focus})\n`;
+          intensity = level === "Advanced" ? "High" : level === "Intermediate" ? "Medium" : "Low";
+          
+          exercises.forEach((exercise, index) => {
+            if (index < 5) {
+              const reps = level === "Advanced" ? "8-12" : "10-15";
+              rec += `• ${exercise}: ${sets}x${reps}\n`;
+            }
+          });
+          
+          count = Math.min(exercises.length, 5);
+          dur = count * 10 + 20;
+          rec += `\n⏰ REST TIMER: ${level === "Advanced" ? "90-120" : "60-90"} seconds between sets`;
+          
+        } else if (goal === "Lose fat") {
+          rec += "🏃‍♂️ PHASE 2: FAT LOSS HIIT\n";
+          intensity = "High";
+          
+          const hiitExercises = ['Burpees', 'Mountain Climbers', 'Jump Squats', 'High Knees', 'Plank Jacks'];
+          hiitExercises.forEach((exercise, index) => {
+            rec += `• ${exercise}: ${sets}x30s (30s rest)\n`;
+          });
+          
+          count = hiitExercises.length;
+          dur = 40;
+          rec += "\n⏰ REST TIMER: 30 seconds between exercises, 60 seconds between rounds";
+          
+        } else {
+          rec += "🧘‍♀️ PHASE 2: MAINTENANCE\n";
+          intensity = "Moderate";
+          
+          const maintenanceExercises = ['Bodyweight Squats', 'Push-ups', 'Plank', 'Lunges', 'Glute Bridges'];
+          maintenanceExercises.forEach((exercise, index) => {
+            rec += `• ${exercise}: 3x15\n`;
+          });
+          
+          count = maintenanceExercises.length;
+          dur = 35;
+          rec += "\n⏰ REST TIMER: 45-60 seconds between sets";
+        }
+        
+        rec += "\n\n🧘‍♂️ PHASE 3: COOL DOWN\n• 5-10 min static stretching\n• Focus on worked muscle groups\n• Hydrate well\n\n🎵 WORKOUT MUSIC: Use Spotify player for motivation!";
+        
+        currentProtocolText = rec;
+        
+        // Get nutrition data
+        const nutrition = calculateNutrition();
+        
+        // Generate workout schedule
+        const schedule = generateWorkoutSchedule();
+        
+        // Get motivational quote
+        const quote = await getMotivationalQuote();
+        
+        // Build display content
+        let displayContent = `<div class="fade-in">${rec.replace(/\n/g, '<br>')}</div>`;
+        
+        // Add workout schedule
+        if (schedule && schedule.length > 0) {
+          displayContent += displayWorkoutSchedule(schedule);
+        }
+        
+        // Add nutrition info
+        if (nutrition) {
+          displayContent += displayNutritionInfo(nutrition);
+        }
+        
+        // Add exercise videos
+        if (currentExercises && currentExercises.length > 0) {
+          const videosHTML = displayExerciseVideos(currentExercises);
+          displayContent += videosHTML;
+        }
+        
+        // Update UI
+        document.getElementById('result').innerHTML = displayContent;
+        document.getElementById('statsContainer').style.display = 'grid';
+        document.getElementById('totalExercises').textContent = count;
+        document.getElementById('workoutDuration').textContent = dur + "m";
+        document.getElementById('intensityLevel').textContent = intensity;
+        document.getElementById('downloadBtn').style.display = 'flex';
+        
+        // Display motivational quote
+        if (quote) {
+          document.getElementById('quoteBox').innerText = quote;
+          document.getElementById('quoteBox').style.display = 'block';
+        }
+        
+        saveToHistory(goal, focus, level);
+        
+        showNotification('✅ Workout plan generated successfully!', 'success');
+        
+      } catch (error) {
+        console.error('❌ Error in getRecommendation:', error);
+        
+        // Show error with fallback
+        document.getElementById('result').innerHTML = `
+          <div class="fade-in">
+            <h3 style="color: var(--primary);">Basic Workout Plan</h3>
+            <p style="color: var(--text-muted); margin-bottom: 15px;">Connection issue - using fallback plan:</p>
+            
+            <div style="background: rgba(99, 102, 241, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 15px;">
+              <h4 style="color: var(--primary); margin-top: 0;">🔥 WARM-UP</h4>
+              <p>• 5 min light cardio<br>• Dynamic stretching</p>
+              
+              <h4 style="color: var(--primary);">💪 MAIN WORKOUT</h4>
+              <p>• Bench Press: 3x10<br>• Push-ups: 3x15<br>• Dumbbell Rows: 3x12<br>• Squats: 3x10<br>• Plank: 3x60s</p>
+              
+              <h4 style="color: var(--primary);">🧘‍♂️ COOL DOWN</h4>
+              <p>• 5 min static stretching<br>• Hydrate well</p>
+            </div>
+          </div>
+        `;
+        
+        showNotification('⚠️ Using fallback workout plan', 'warning');
+        
+      } finally {
+        // Always reset button state
+        generateBtn.disabled = false;
+        if (refreshBtn) refreshBtn.disabled = false;
+        generateText.textContent = 'GENERATE PROTOCOL';
+        apiLoading.style.display = 'none';
+        
+        // Make sure stats are visible
+        document.getElementById('statsContainer').style.display = 'grid';
+        document.getElementById('totalExercises').textContent = document.getElementById('totalExercises').textContent || '5';
+        document.getElementById('workoutDuration').textContent = document.getElementById('workoutDuration').textContent || '45m';
+        document.getElementById('intensityLevel').textContent = document.getElementById('intensityLevel').textContent || 'Medium';
+      }
+    }
+
+    // ================ PRESET FUNCTIONS ================
+    function applyPreset(g, a, l, go, f) {
+      try {
+        document.getElementById('gender').value = g;
+        document.getElementById('age').value = a;
+        document.getElementById('level').value = l;
+        document.getElementById('goal').value = go;
+        document.getElementById('focus').value = f;
+        
+        // Clear previous error messages
+        document.querySelectorAll('.error-message').forEach(el => {
+          el.style.display = 'none';
+        });
+        
+        // Update progress bar
+        updateConfigProgress();
+        
+        // Wait a moment for validation then generate
+        setTimeout(() => {
+          if (validateForm()) {
+            getRecommendation();
+          } else {
+            showNotification('Please check the form values and try again', 'warning');
+          }
+        }, 100);
+      } catch (error) {
+        console.error('Error applying preset:', error);
+        showNotification('Error loading preset', 'error');
+      }
+    }
+
+    // ================ HISTORY FUNCTIONS ================
+    function saveToHistory(goal, focus, level) {
+      const timestamp = new Date().toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+      });
+      
+      historyLog.unshift({ goal, focus, level, date: timestamp });
+      if (historyLog.length > 5) historyLog.pop();
+      
+      // Save to localStorage
+      localStorage.setItem('camtechHistory', JSON.stringify(historyLog));
+      
+      // Update display
+      updateHistoryDisplay();
+    }
+
+    function loadHistory() {
+      if (historyLog.length > 0) {
+        updateHistoryDisplay();
+      }
+    }
+
+    function updateHistoryDisplay() {
+      const body = document.getElementById('historyBody');
+      body.innerHTML = historyLog.map(h => 
+        `<tr>
+          <td>${h.goal}</td>
+          <td>${h.focus}</td>
+          <td>${h.level}</td>
+          <td>${h.date}</td>
+        </tr>`
+      ).join('');
+      document.getElementById('historyCard').style.display = 'block';
+    }
+
+    function refreshAPIData() {
+      if (currentProtocolText) {
+        showNotification('Refreshing exercise data...', 'info');
+        getRecommendation();
+      } else {
+        showNotification('Generate a workout first', 'warning');
+      }
+    }
+
+    // ================ SPOTIFY PLAYER FUNCTIONS ================
+    function showSpotifyPlayer() {
+      const resultDiv = document.getElementById('result');
+      let spotifyHTML = `
+        <div class="spotify-container fade-in">
+          <div class="spotify-header">
+            <i class="fab fa-spotify spotify-logo"></i>
+            <h3 style="margin: 0; color: #1DB954;">Workout Music Player</h3>
+          </div>
+          
+          <div style="font-size: 0.9rem; margin-bottom: 15px; color: var(--text-muted);">
+            Boost your workout performance with curated playlists.
+          </div>
+          
+          <div class="playlist-grid" id="playlistGrid">
+      `;
+      
+      // Add playlist buttons
+      FALLBACK_DATA.spotifyPlaylists.forEach((playlist, index) => {
+        spotifyHTML += `
+          <div class="playlist-item ${index === 0 ? 'active' : ''}" 
+               data-url="${playlist.embedUrl}" 
+               style="border-left: 4px solid ${playlist.color};"
+               onclick="loadSpotifyPlaylist('${playlist.embedUrl}', this)">
+            <div style="font-weight: 600; color: white;">${playlist.name}</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">${playlist.description}</div>
+          </div>
+        `;
+      });
+      
+      spotifyHTML += `
+          </div>
+          
+          <div class="player-container" id="spotifyPlayer">
+            <div style="text-align: center; padding: 30px; color: var(--text-muted);">
+              <i class="fab fa-spotify" style="font-size: 3rem; opacity: 0.5; margin-bottom: 15px;"></i>
+              <p>Select a playlist to start listening</p>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Insert at beginning of result
+      const currentContent = resultDiv.innerHTML;
+      resultDiv.innerHTML = spotifyHTML + currentContent;
+      
+      // Load first playlist by default
+      if (FALLBACK_DATA.spotifyPlaylists.length > 0) {
+        setTimeout(() => {
+          loadSpotifyPlaylist(FALLBACK_DATA.spotifyPlaylists[0].embedUrl);
+        }, 100);
+      }
+    }
+
+    function loadSpotifyPlaylist(embedUrl, element = null) {
+      if (element) {
+        // Update active state
+        document.querySelectorAll('.playlist-item').forEach(item => {
+          item.classList.remove('active');
+        });
+        element.classList.add('active');
+      }
+      
+      const playerContainer = document.getElementById('spotifyPlayer');
+      playerContainer.innerHTML = `
+        <iframe style="border-radius: 12px; width: 100%; height: 352px;" 
+                src="${embedUrl}"
+                frameborder="0" 
+                allowfullscreen="" 
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                loading="lazy">
+        </iframe>
+      `;
+      
+      showNotification('Spotify playlist loaded!', 'success');
+    }
+
+    // ================ TIMER FUNCTIONS ================
+    function initializeTimer() {
+      updateTimerDisplay();
+    }
+
+    function toggleTimer() {
+      const window = document.getElementById('timerWindow');
+      window.style.display = window.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function setTimerPreset(seconds) {
+      timerSeconds = seconds;
+      updateTimerDisplay();
+      showNotification(`Timer set to ${formatTime(seconds)}`, 'info');
+    }
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(timerSeconds / 60);
+      const seconds = timerSeconds % 60;
+      document.getElementById('timerDisplay').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return minutes > 0 ? 
+        `${minutes}:${remainingSeconds.toString().padStart(2, '0')}` : 
+        `${seconds} seconds`;
+    }
+
+    function startTimer() {
+      if (isTimerRunning) return;
+      
+      isTimerRunning = true;
+      document.getElementById('timerStart').disabled = true;
+      document.getElementById('timerPause').disabled = false;
+      
+      timerInterval = setInterval(() => {
+        if (timerSeconds > 0) {
+          timerSeconds--;
+          updateTimerDisplay();
+          
+          if (timerSeconds === 0) {
+            playTimerSound();
+            showNotification('Rest time is over! Time for your next set!', 'success');
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            document.getElementById('timerStart').disabled = false;
+            document.getElementById('timerPause').disabled = true;
+          }
+        }
+      }, 1000);
+      
+      showNotification('Timer started!', 'info');
+    }
+
+    function pauseTimer() {
+      if (!isTimerRunning) return;
+      
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      document.getElementById('timerStart').disabled = false;
+      document.getElementById('timerPause').disabled = true;
+      showNotification('Timer paused', 'warning');
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      isTimerRunning = false;
+      timerSeconds = 180;
+      updateTimerDisplay();
+      document.getElementById('timerStart').disabled = false;
+      document.getElementById('timerPause').disabled = true;
+      
+      // Reset active preset
+      document.querySelectorAll('.timer-preset').forEach(b => {
+        b.classList.remove('active');
+        if (parseInt(b.dataset.time) === 180) {
+          b.classList.add('active');
+        }
+      });
+      
+      showNotification('Timer reset to 3:00', 'info');
+    }
+
+    function playTimerSound() {
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+      } catch (error) {
+        console.log('Audio not supported');
+      }
+    }
+
+    // ================ PROFESSIONAL AI FITNESS COACH INITIALIZATION ================
+function initializeChatbot() {
+    console.log("🚀 Initializing Professional AI Fitness Coach...");
+    
+    // Enhanced chatbot header with status indicators
+    document.getElementById('chatbotHeader').innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="position: relative;">
+                    <i class="fas fa-robot" style="font-size: 1.2rem; color: var(--primary);"></i>
+                    <div id="geminiStatusIndicator" class="openai-status-indicator"></div>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1rem;">AI Fitness Coach Pro</h3>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                        <span id="chatbotStatus" class="api-status initializing" style="font-size: 0.6rem; padding: 2px 8px;">
+                            <i class="fas fa-circle-notch fa-spin" style="font-size: 0.5rem;"></i> Initializing...
+                        </span>
+                        <span class="ai-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 1px 6px; border-radius: 10px; font-size: 0.6rem; font-weight: 600;">
+                            OpenAI GPT
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="chatbot-tool-btn" onclick="showChatbotTools()" title="Tools" style="width: 32px; height: 32px; padding: 0; justify-content: center;">
+                    <i class="fas fa-tools"></i>
+                </button>
+                <button class="chatbot-close" id="chatbotClose">&times;</button>
+            </div>
+        </div>
+    `;
+    
+    // Clear and initialize messages with professional welcome
+    const chatbotMessages = document.getElementById('chatbotMessages');
+    chatbotMessages.innerHTML = '';
+    
+    // Show advanced welcome message
+    showProfessionalWelcomeMessage();
+    
+    // Update input with advanced placeholder
+    document.getElementById('chatbotInput').placeholder = "Type your question, or use /help for commands...";
+    
+    // Initialize advanced features
+    initializeAdvancedFeatures();
+    
+    // Test OpenAI API with enhanced feedback
+testOpenAIConnection();
+}
+
+function showProfessionalWelcomeMessage() {
+    const messagesDiv = document.getElementById('chatbotMessages');
+    
+    const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    const date = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    
+    const welcomeMsg = `
+        <div class="message bot-message fade-in professional-welcome">
+            <div class="message-header">
+                <div class="coach-badge">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="position: relative;">
+                            <i class="fas fa-robot" style="color: var(--primary); font-size: 1.1rem;"></i>
+                            <div class="pulse-indicator"></div>
+                        </div>
+                        <div>
+                            <strong style="font-size: 0.95rem;">AI Fitness Coach Pro v2.1</strong>
+                            <div style="display: flex; gap: 6px; margin-top: 2px;">
+                                <span class="credential-tag">NASM</span>
+                                <span class="credential-tag">ACE</span>
+                                <span class="credential-tag">CSCS</span>
+                                <span class="credential-tag">AI-Powered</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="message-time">${timestamp}</div>
+            </div>
+            <div class="message-content">
+                <div style="margin-bottom: 15px;">
+                    <div style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 5px;">${date}</div>
+                    <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 10px;">
+                        Welcome to Your Professional AI Fitness Coach
+                    </div>
+                </div>
+                
+                <div style="background: rgba(16, 185, 129, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid var(--accent);">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <i class="fas fa-bolt" style="color: var(--accent);"></i>
+                        <strong style="color: var(--text-main);">System Status: ONLINE</strong>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">
+                        All systems operational. Ready to provide expert fitness guidance.
+                    </div>
+                </div>
+                
+                <div class="section-title">
+                    <h4><i class="fas fa-star" style="color: var(--warning);"></i> Advanced Features Available:</h4>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 15px 0;">
+                    <div class="feature-card">
+                        <i class="fas fa-dumbbell" style="color: var(--primary);"></i>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.85rem;">Smart Workout Plans</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">AI-generated & optimized</div>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-chart-line" style="color: var(--accent);"></i>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.85rem;">Progress Analytics</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">Track & optimize results</div>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-user-md" style="color: var(--danger);"></i>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.85rem;">Injury Prevention</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">Form correction & safety</div>
+                        </div>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-brain" style="color: var(--secondary);"></i>
+                        <div>
+                            <div style="font-weight: 600; font-size: 0.85rem;">Adaptive Learning</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">Learns from your progress</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section-title">
+                    <h4><i class="fas fa-terminal" style="color: var(--primary);"></i> Quick Commands:</h4>
+                </div>
+                
+                <div style="background: rgba(30, 41, 59, 0.5); padding: 12px; border-radius: 10px; margin: 15px 0; font-family: 'Monaco', 'Consolas', monospace; font-size: 0.8rem;">
+                    <div style="color: var(--accent); margin-bottom: 5px;">$ /analyze – Analyze current workout</div>
+                    <div style="color: var(--primary); margin-bottom: 5px;">$ /plan – Generate workout plan</div>
+                    <div style="color: var(--warning); margin-bottom: 5px;">$ /nutrition – Meal planning</div>
+                    <div style="color: var(--secondary);">$ /formcheck – Exercise form analysis</div>
+                </div>
+                
+                <div style="background: rgba(99, 102, 241, 0.1); padding: 12px; border-radius: 10px; margin-top: 20px; border: 1px dashed rgba(99, 102, 241, 0.3);">
+                    <div style="display: flex; align-items: flex-start; gap: 10px;">
+                        <i class="fas fa-lightbulb" style="color: var(--warning); margin-top: 2px;"></i>
+                        <div style="font-size: 0.85rem;">
+                            <strong>Pro Tip:</strong> I can analyze your current workout plan and provide optimization suggestions.
+                            <button onclick="analyzeCurrentWorkout()" style="margin-left: 10px; padding: 4px 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                                <i class="fas fa-play"></i> Analyze Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="message-footer">
+                <button class="action-btn" onclick="quickStartGuide()">
+                    <i class="fas fa-rocket"></i> Quick Start
+                </button>
+                <button class="action-btn" onclick="showCaseStudies()">
+                    <i class="fas fa-graduation-cap"></i> Examples
+                </button>
+                <button class="action-btn" onclick="systemDiagnostics()">
+                    <i class="fas fa-stethoscope"></i> Diagnostics
+                </button>
+            </div>
+        </div>
+    `;
+    
+    messagesDiv.innerHTML = welcomeMsg;
+    
+    // Add suggestions after a delay
+    setTimeout(() => {
+        showProfessionalSuggestions();
+    }, 500);
+}
+
+function initializeAdvancedFeatures() {
+    // Initialize conversation memory
+    conversationContext = {
+        sessionId: 'session_' + Date.now(),
+        startTime: new Date().toISOString(),
+        userProfile: {},
+        conversationHistory: [],
+        workoutAnalysis: [],
+        nutritionPlans: [],
+        formChecks: []
+    };
+    
+    // Initialize memory from localStorage
+    loadConversationMemory();
+    
+    // Set up advanced event listeners
+    setupAdvancedChatbotListeners();
+    
+    console.log("Advanced features initialized");
+}
+
+function setupAdvancedChatbotListeners() {
+    const input = document.getElementById('chatbotInput');
+    
+    // Smart input detection
+    input.addEventListener('input', function(e) {
+        const value = e.target.value;
+        
+        // Detect if user is typing a command
+        if (value.startsWith('/')) {
+            showCommandSuggestions(value);
+        }
+        
+        // Auto-resize textarea (if implemented)
+        if (this.tagName === 'TEXTAREA') {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        }
+    });
+    
+    // Voice input support (if available)
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        setupVoiceRecognition();
+    }
+}
+
+function showProfessionalSuggestions() {
+    const messagesDiv = document.getElementById('chatbotMessages');
+    
+    const suggestionsHTML = `
+        <div class="suggestions-container professional-suggestions">
+            <div class="suggestions-header">
+                <i class="fas fa-bolt" style="color: var(--warning);"></i>
+                <span style="font-weight: 600;">Quick Actions</span>
+                <span style="margin-left: auto; font-size: 0.7rem; color: var(--text-muted);">
+                    <i class="fas fa-clock"></i> ${new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'} Session
+                </span>
+            </div>
+            <div class="suggestions-grid">
+                <button class="suggestion-card professional" onclick="quickAction('analyze_workout')">
+                    <div class="suggestion-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="suggestion-content">
+                        <div class="suggestion-title">Analyze Workout</div>
+                        <div class="suggestion-desc">Get optimization tips</div>
+                    </div>
+                    <div class="suggestion-badge">AI</div>
+                </button>
+                <button class="suggestion-card professional" onclick="quickAction('generate_plan')">
+                    <div class="suggestion-icon">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <div class="suggestion-content">
+                        <div class="suggestion-title">Create Plan</div>
+                        <div class="suggestion-desc">Personalized routine</div>
+                    </div>
+                    <div class="suggestion-badge">NEW</div>
+                </button>
+                <button class="suggestion-card professional" onclick="quickAction('nutrition_check')">
+                    <div class="suggestion-icon">
+                        <i class="fas fa-apple-alt"></i>
+                    </div>
+                    <div class="suggestion-content">
+                        <div class="suggestion-title">Nutrition Check</div>
+                        <div class="suggestion-desc">Meal planning</div>
+                    </div>
+                    <div class="suggestion-badge">PRO</div>
+                </button>
+                <button class="suggestion-card professional" onclick="quickAction('form_analysis')">
+                    <div class="suggestion-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="suggestion-content">
+                        <div class="suggestion-title">Form Analysis</div>
+                        <div class="suggestion-desc">Exercise technique</div>
+                    </div>
+                    <div class="suggestion-badge">AI</div>
+                </button>
+            </div>
+            
+            <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--glass-border);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">
+                        <i class="fas fa-history"></i> Memory: ${conversationContext.conversationHistory.length} exchanges
+                    </span>
+                    <button onclick="clearConversationMemory()" style="background: none; border: 1px solid var(--glass-border); color: var(--text-muted); padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; cursor: pointer;">
+                        Clear Memory
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    messagesDiv.insertAdjacentHTML('beforeend', suggestionsHTML);
+}
+
+   // ================ PROFESSIONAL GEMINI API CONNECTION ================
+async function testOpenAIConnection() {
+    const statusElement = document.getElementById('chatbotStatus');
+    
+    // Update UI to show testing
+    statusElement.className = 'api-status testing';
+    statusElement.innerHTML = '<i class="fas fa-circle-notch fa-spin" style="font-size: 0.5rem;"></i> Testing OpenAI Connection...';
+    
+    // Check if API key is configured
+    if (!OPENAI_API_KEY || OPENAI_API_KEY === 'YOUR_OPENAI_API_KEY_HERE') {
+        statusElement.className = 'api-status offline';
+        statusElement.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size: 0.5rem;"></i> API Key Required';
+        
+        showNotification('⚠️ OpenAI API key not configured. Using enhanced local AI mode.', 'warning');
+        setTimeout(() => {
+            showNotification('💡 Get your API key from OpenAI platform for full AI features', 'info');
+        }, 2000);
+        return { connected: false, mode: 'local' };
+    
+    // ... rest of the function stays the same
+    
+        statusElement.className = 'api-status offline';
+        statusElement.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size: 0.5rem;"></i> API Key Required';
+        if (statusIndicator) statusIndicator.className = 'openai-status-indicator offline';
+        
+        showNotification('⚠️ OpenAI API key not configured. Using enhanced local AI mode.', 'warning');
+        setTimeout(() => {
+            showNotification('💡 Get your API key from OpenAI platform for full AI features', 'info');
+        }, 2000);
+        return { connected: false, mode: 'local' };
+    }
+    
+    try {
+        const startTime = performance.now();
+        
+        // Test OpenAI API
+        const testResponse = await axios.post(
+            'https://api.openai.com/v1/chat/completions',
+            {
+                model: 'gpt-3.5-turbo', // Use cheaper model for test
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'You are a test assistant. Respond with "READY" if you are operational.'
+                    },
+                    {
+                        role: 'user',
+                        content: 'Test connection'
+                    }
+                ],
+                max_tokens: 10,
+                temperature: 0.1
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${OPENAI_API_KEY}`
+                },
+                timeout: 8000
+            }
+        );
+        
+        const endTime = performance.now();
+        const responseTime = Math.round(endTime - startTime);
+        
+        // Validate response
+        if (testResponse.data && 
+            testResponse.data.choices && 
+            testResponse.data.choices[0] &&
+            testResponse.data.choices[0].message &&
+            testResponse.data.choices[0].message.content.includes('READY')) {
+            
+            // Success
+            statusElement.className = 'api-status online';
+            statusElement.innerHTML = `
+                <i class="fas fa-check-circle" style="font-size: 0.5rem;"></i> 
+                <span>OpenAI Connected</span>
+                <span style="margin-left: 5px; font-size: 0.55rem; opacity: 0.7;">${responseTime}ms</span>
+            `;
+            
+            if (statusIndicator) {
+                statusIndicator.className = 'openai-status-indicator online';
+                statusIndicator.setAttribute('title', `Response time: ${responseTime}ms`);
+            }
+            
+            showNotification(`🤖 OpenAI Connected Successfully (${responseTime}ms)`, 'success');
+            
+            console.log('🔗 OpenAI API Connection Details:', {
+                status: 'connected',
+                responseTime: responseTime + 'ms',
+                model: OPENAI_MODEL,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Update conversation memory
+            conversationContext.openaiConnected = true;
+            conversationContext.lastConnectionTest = new Date().toISOString();
+            conversationContext.responseTime = responseTime;
+            
+            // Initialize AI personality
+            initializeAIPersonality();
+            
+            return { 
+                connected: true, 
+                responseTime, 
+                mode: 'openai',
+                details: testResponse.data 
+            };
+            
+        } else {
+            throw new Error('Invalid response format from OpenAI API');
+        }
+        
+    } catch (error) {
+        console.error('🔴 OpenAI API Connection Failed:', error);
+        
+        statusElement.className = 'api-status offline';
+        statusElement.innerHTML = `
+            <i class="fas fa-exclamation-circle" style="font-size: 0.5rem;"></i> 
+            <span>AI Offline</span>
+        `;
+        
+        if (statusIndicator) {
+            statusIndicator.className = 'openai-status-indicator offline';
+            statusIndicator.setAttribute('title', 'Connection failed: ' + error.message);
+        }
+        
+        // Enhanced error handling for OpenAI
+        let errorMessage = 'OpenAI Service Unavailable';
+        if (error.response) {
+            switch(error.response.status) {
+                case 401:
+                    errorMessage = 'Invalid API Key';
+                    break;
+                case 429:
+                    errorMessage = 'Rate Limit Exceeded';
+                    break;
+                case 500:
+                    errorMessage = 'OpenAI Service Error';
+                    break;
+                default:
+                    errorMessage = `API Error: ${error.response.status}`;
+            }
+        } else if (error.message.includes('timeout')) {
+            errorMessage = 'Connection Timeout';
+        }
+        
+        showNotification(`⚠️ ${errorMessage}. Using Enhanced Local Mode.`, 'warning');
+        
+        return { 
+            connected: false, 
+            error: errorMessage,
+            mode: 'local_enhanced' 
+        };
+    }
+}
+
+function initializeAIPersonality() {
+    // Set up AI personality based on user profile
+    const userLevel = document.getElementById('level').value;
+    const userGoal = document.getElementById('goal').value;
+    
+    conversationContext.aiPersonality = {
+        tone: userLevel === 'New' ? 'encouraging' : userLevel === 'Intermediate' ? 'technical' : 'advanced',
+        focus: userGoal === 'Build muscle' ? 'strength' : userGoal === 'Lose fat' ? 'fat_loss' : 'general_fitness',
+        communicationStyle: 'structured',
+        detailLevel: userLevel === 'Advanced' ? 'high' : 'medium',
+        emojiUsage: 'moderate'
+    };
+    
+    console.log('AI Personality Initialized:', conversationContext.aiPersonality);
+}
+
+// ================ ADVANCED CONVERSATION MEMORY ================
+function loadConversationMemory() {
+    try {
+        const savedMemory = localStorage.getItem('camtechAIMemory');
+        if (savedMemory) {
+            const memory = JSON.parse(savedMemory);
+            
+            // Merge with current context
+            conversationContext = {
+                ...conversationContext,
+                ...memory,
+                // Don't overwrite current session
+                sessionId: conversationContext.sessionId,
+                startTime: conversationContext.startTime
+            };
+            
+            console.log('📚 Conversation memory loaded:', memory.conversationHistory?.length || 0, 'exchanges');
+        }
+    } catch (error) {
+        console.error('Error loading conversation memory:', error);
+    }
+}
+
+function saveConversationMemory() {
+    try {
+        // Only save last 50 exchanges
+        if (conversationContext.conversationHistory.length > 50) {
+            conversationContext.conversationHistory = conversationContext.conversationHistory.slice(-50);
+        }
+        
+        localStorage.setItem('camtechAIMemory', JSON.stringify({
+            conversationHistory: conversationContext.conversationHistory,
+            workoutAnalysis: conversationContext.workoutAnalysis,
+            nutritionPlans: conversationContext.nutritionPlans,
+            formChecks: conversationContext.formChecks,
+            lastUpdated: new Date().toISOString()
+        }));
+    } catch (error) {
+        console.error('Error saving conversation memory:', error);
+    }
+}
+
+function clearConversationMemory() {
+    if (confirm('Clear all conversation memory? This will reset the AI learning.')) {
+        conversationContext.conversationHistory = [];
+        conversationContext.workoutAnalysis = [];
+        conversationContext.nutritionPlans = [];
+        conversationContext.formChecks = [];
+        
+        localStorage.removeItem('camtechAIMemory');
+        
+        showNotification('Conversation memory cleared successfully', 'success');
+        
+        // Refresh suggestions
+        const suggestions = document.querySelector('.professional-suggestions');
+        if (suggestions) suggestions.remove();
+        showProfessionalSuggestions();
+    }
+}
+
+// ================ ADVANCED QUICK ACTIONS ================
+function quickAction(action) {
+    const actions = {
+        'analyze_workout': {
+            question: "Perform a comprehensive analysis of my current workout plan. Include strength assessment, optimization suggestions, and safety checks.",
+            icon: 'fas fa-chart-line',
+            color: 'var(--accent)'
+        },
+        'generate_plan': {
+            question: "Create a professional 4-week workout plan based on my current profile. Include progression, deload weeks, and performance metrics.",
+            icon: 'fas fa-dumbbell',
+            color: 'var(--primary)'
+        },
+        'nutrition_check': {
+            question: "Provide a detailed nutrition plan with meal timing, macro breakdown, and supplement recommendations for my goals.",
+            icon: 'fas fa-apple-alt',
+            color: 'var(--warning)'
+        },
+        'form_analysis': {
+            question: "Analyze proper form for compound lifts (squat, bench, deadlift). Include common mistakes and correction techniques.",
+            icon: 'fas fa-user-check',
+            color: 'var(--secondary)'
+        }
+    };
+    
+    const selected = actions[action];
+    if (!selected) return;
+    
+    // Show action indicator
+    const input = document.getElementById('chatbotInput');
+    input.value = selected.question;
+    input.style.borderLeft = `4px solid ${selected.color}`;
+    
+    // Send after a brief delay
+    setTimeout(() => {
+        input.style.borderLeft = '';
+        sendChatMessage();
+    }, 300);
+}
+
+// ================ PROFESSIONAL RESPONSE HANDLING ================
+async function getProfessionalAIResponse(message) {
+    // Check for commands first
+    if (message.startsWith('/')) {
+        return handleProfessionalCommand(message);
+    }
+    
+    // Update typing indicator with more details
+    const typingIndicator = document.getElementById('typingIndicator');
+    if (typingIndicator) {
+        typingIndicator.innerHTML = `
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-text">Processing with OPEN AI...</div>
+        `;
+        typingIndicator.style.display = 'flex';
+    }
+    
+    // Check API status
+    const apiStatus = await testOpenAIConnection();
+    
+    if (!apiStatus.connected || apiStatus.mode === 'local_enhanced') {
+        // Use enhanced local response
+        return getEnhancedProfessionalResponse(message);
+    }
+    
+    // ... rest of function
+    
+    try {
+        // Build comprehensive context
+        const userContext = await getProfessionalUserContext();
+        const conversationHistory = conversationContext.conversationHistory.slice(-6);
+        
+        // Prepare advanced prompt
+        const professionalPrompt = buildProfessionalPrompt(message, userContext, conversationHistory);
+        
+        // Make API call to OpenAI
+const response = await axios.post(
+    'https://api.openai.com/v1/chat/completions',
+    {
+        model: AI_CONFIG.model,
+        messages: [
+            {
+                role: 'system',
+                content: buildProfessionalPrompt(message, userContext, conversationHistory)
+            },
+            {
+                role: 'user',
+                content: message
+            }
+        ],
+        temperature: AI_CONFIG.temperature,
+        max_tokens: AI_CONFIG.maxTokens,
+        presence_penalty: AI_CONFIG.presence_penalty,
+        frequency_penalty: AI_CONFIG.frequency_penalty,
+        stream: AI_CONFIG.stream
+    },
+    {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
+            'X-Client-Version': 'CAMTECH-3.5-PRO'
+        },
+        timeout: 30000 // Longer timeout for OpenAI
+    }
+);
+
+if (response.data && response.data.choices && response.data.choices[0]) {
+    const aiResponse = response.data.choices[0].message.content;
+    // ... rest of the code
+}
+        
+        if (response.data && response.data.candidates && response.data.candidates[0]) {
+            const aiResponse = response.data.candidates[0].content.parts[0].text;
+            
+            // Store in conversation memory
+            conversationContext.conversationHistory.push({ role: 'user', content: message, timestamp: new Date().toISOString() });
+            conversationContext.conversationHistory.push({ role: 'assistant', content: aiResponse, timestamp: new Date().toISOString() });
+            saveConversationMemory();
+            
+            return formatProfessionalResponse(aiResponse);
+            
+        } else {
+            throw new Error('No valid response from AI');
+        }
+        
+    } catch (error) {
+        console.error('Professional AI Error:', error);
+        
+        // Fallback to enhanced local with context
+        const fallbackResponse = getEnhancedProfessionalResponse(message);
+        
+        // Store fallback in memory
+        conversationContext.conversationHistory.push({ 
+            role: 'user', 
+            content: message, 
+            timestamp: new Date().toISOString(),
+            error: error.message 
+        });
+        conversationContext.conversationHistory.push({ 
+            role: 'assistant', 
+            content: fallbackResponse, 
+            timestamp: new Date().toISOString(),
+            mode: 'fallback' 
+        });
+        
+        return `⚠️ **AI Service Temporarily Unavailable**\n\n${fallbackResponse}\n\n*Note: Using enhanced local mode. Full AI features will resume when connection is restored.*`;
+    } finally {
+        if (typingIndicator) {
+            typingIndicator.style.display = 'none';
+        }
+    }
+}
+
+function buildProfessionalPrompt(message, userContext, history) {
+    const personality = conversationContext.aiPersonality || {};
+    
+    return `You are an expert AI Fitness Coach with the following configuration:
+
+COACH PROFILE:
+- Certification: NASM, ACE, CSCS Certified
+- Experience: 10+ years in professional training
+- Specialization: ${personality.focus || 'general_fitness'}
+- Communication Style: ${personality.tone || 'professional'}
+- Detail Level: ${personality.detailLevel || 'medium'}
+
+USER CONTEXT:
+${userContext}
+
+CONVERSATION HISTORY (last ${history.length} exchanges):
+${history.map(h => `${h.role.toUpperCase()}: ${h.content}`).join('\n')}
+
+RESPONSE REQUIREMENTS:
+1. Address user by their context if available
+2. Provide structured, actionable advice
+3. Include safety considerations
+4. Use evidence-based information
+5. Format with clear sections
+6. Add relevant emojis (${personality.emojiUsage || 'moderate'} usage)
+7. End with specific next steps
+
+FORMAT:
+- Start with appropriate greeting
+- Use headings (##) for major sections
+- Use bullet points for lists
+- Include metrics where applicable
+- Add timeline expectations
+
+IMPORTANT: Keep response under 600 words and suitable for ${personality.detailLevel || 'medium'} detail level.`;
+}
+
+function getProfessionalUserContext() {
+    // Enhanced user context collection
+    const context = {
+        basic: {},
+        fitness: {},
+        current: {},
+        history: {}
+    };
+    
+    // Basic information
+    const gender = document.getElementById('gender').value;
+    const age = document.getElementById('age').value;
+    const weight = document.getElementById('weight').value;
+    const height = document.getElementById('height').value;
+    
+    if (gender && gender !== 'Prefer not to say') context.basic.gender = gender;
+    if (age && parseInt(age) > 0) {
+        context.basic.age = age;
+        context.basic.ageGroup = getAgeGroup(age);
+    }
+    if (weight && parseInt(weight) > 0) context.basic.weight = weight + 'kg';
+    if (height && parseInt(height) > 0) context.basic.height = height + 'cm';
+    
+    // Fitness information
+    const level = document.getElementById('level').value;
+    const goal = document.getElementById('goal').value;
+    const focus = document.getElementById('focus').value;
+    const workoutsPerWeek = document.getElementById('workoutsPerWeek').value;
+    const activity = document.getElementById('activity').value;
+    const intensityMod = document.getElementById('intensityMod').value;
+    
+    if (level) context.fitness.level = level;
+    if (goal) context.fitness.goal = goal;
+    if (focus) context.fitness.focusArea = focus;
+    if (workoutsPerWeek) context.fitness.frequency = workoutsPerWeek + ' days/week';
+    if (activity) context.fitness.activityLevel = getActivityLevelLabel(activity);
+    if (intensityMod) context.fitness.intensity = getIntensityLabel(intensityMod);
+    
+    // Current workout and nutrition
+    if (currentProtocolText) {
+        context.current.workout = currentProtocolText.substring(0, 200) + '...';
+    }
+    if (currentNutrition) {
+        context.current.nutrition = {
+            calories: currentNutrition.calories,
+            protein: currentNutrition.protein + 'g',
+            carbs: currentNutrition.carbs + 'g',
+            fat: currentNutrition.fat + 'g'
+        };
+    }
+    
+    // History
+    if (historyLog.length > 0) {
+        context.history.recentGoals = historyLog.slice(0, 3).map(h => h.goal);
+        context.history.totalSessions = historyLog.length;
+    }
+    
+    // Format into readable string
+    let contextString = "=== USER PROFILE ===\n\n";
+    
+    Object.entries(context.basic).forEach(([key, value]) => {
+        contextString += `• ${key}: ${value}\n`;
+    });
+    
+    contextString += "\n=== FITNESS PROFILE ===\n";
+    Object.entries(context.fitness).forEach(([key, value]) => {
+        contextString += `• ${key}: ${value}\n`;
+    });
+    
+    if (context.current.workout) {
+        contextString += "\n=== CURRENT WORKOUT ===\n" + context.current.workout + "\n";
+    }
+    
+    return contextString;
+}
+
+// Helper functions that are referenced
+function getAgeGroup(age) {
+    const a = parseInt(age);
+    if (a < 18) return 'Teen';
+    if (a < 30) return 'Young Adult';
+    if (a < 50) return 'Adult';
+    return 'Senior';
+}
+
+function getActivityLevelLabel(value) {
+    const labels = {
+        '1.2': 'Sedentary',
+        '1.375': 'Lightly Active',
+        '1.55': 'Moderately Active',
+        '1.725': 'Very Active',
+        '1.9': 'Extremely Active'
+    };
+    return labels[value] || value;
+}
+
+function getIntensityLabel(value) {
+    const labels = {
+        '1': 'Standard',
+        '1.2': 'Hardcore (+20%)',
+        '0.8': 'Recovery (-20%)'
+    };
+    return labels[value] || value;
+}
+
+function calculateBMI(weight, height) {
+    const heightInMeters = height / 100;
+    const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(1);
+    
+    let category;
+    if (bmi < 18.5) category = 'Underweight';
+    else if (bmi < 25) category = 'Normal';
+    else if (bmi < 30) category = 'Overweight';
+    else category = 'Obese';
+    
+    return { value: bmi, category };
+}
+
+// ================ ENHANCED LOCAL RESPONSES ================
+function getEnhancedProfessionalResponse(message) {
+    const msg = message.toLowerCase();
+    
+    // Professional response templates
+    const professionalTemplates = {
+        workout: {
+            title: "🏋️ Professional Workout Analysis",
+            content: `Based on your profile as a **${document.getElementById('level').value}** level trainee with **${document.getElementById('goal').value}** goals:
+
+**📊 STRENGTH ASSESSMENT:**
+• Current Level: ${document.getElementById('level').value}
+• Focus Area: ${document.getElementById('focus').value}
+• Frequency: ${document.getElementById('workoutsPerWeek').value} days/week
+• Intensity: ${getIntensityLabel(document.getElementById('intensityMod').value)}
+
+**🎯 OPTIMIZATION RECOMMENDATIONS:**
+
+**1. Exercise Selection:**
+• Primary Compounds: 2-3 per session
+• Accessory Movements: 3-4 per session
+• Isolation: 1-2 for weak points
+
+**2. Volume Management:**
+• Sets: ${document.getElementById('level').value === 'Advanced' ? '4-5' : document.getElementById('level').value === 'Intermediate' ? '3-4' : '2-3'} per exercise
+• Rep Range: ${document.getElementById('goal').value === 'Build muscle' ? '8-12' : document.getElementById('goal').value === 'Lose fat' ? '12-15' : '10-15'}
+• Rest Periods: ${document.getElementById('level').value === 'Advanced' ? '90-120s' : '60-90s'}
+
+**3. Progression Strategy:**
+• Weekly weight increase: 2.5-5%
+• Volume progression: 1-2 sets every 2 weeks
+• Intensity techniques: Drop sets, supersets
+
+**📈 EXPECTED TIMELINE:**
+• Strength gains: 2-4 weeks
+• Muscle growth: 4-8 weeks
+• Endurance: 3-6 weeks
+
+**⚠️ SAFETY PROTOCOLS:**
+• Always warm up 10-15 minutes
+• Maintain proper form
+• Listen to joint feedback
+• Deload every 4-8 weeks
+
+**🔧 ACTION PLAN:**
+1. Track workouts consistently
+2. Monitor recovery indicators
+3. Adjust nutrition to support goals
+4. Regular form checks
+
+*Need more specific guidance? Ask about particular exercises or techniques!*`
+        },
+        nutrition: {
+            title: "🍎 Professional Nutrition Protocol",
+            content: `**NUTRITION PLAN FOR ${document.getElementById('goal').value.toUpperCase()}**
+
+**📊 MACRONUTRIENT TARGETS:**
+Based on your weight of ${document.getElementById('weight').value || '70'}kg:
+
+• Protein: ${Math.round((document.getElementById('weight').value || 70) * (document.getElementById('goal').value === 'Build muscle' ? 2.2 : document.getElementById('goal').value === 'Lose fat' ? 2.4 : 1.8))}g
+• Carbohydrates: ${Math.round((document.getElementById('weight').value || 70) * (document.getElementById('goal').value === 'Build muscle' ? 4 : document.getElementById('goal').value === 'Lose fat' ? 2 : 3))}g
+• Fats: ${Math.round((document.getElementById('weight').value || 70) * (document.getElementById('goal').value === 'Build muscle' ? 0.8 : document.getElementById('goal').value === 'Lose fat' ? 0.6 : 0.8))}g
+
+**⏰ MEAL TIMING STRATEGY:**
+
+**PRE-WORKOUT (1-2 hours before):**
+• Complex carbs + moderate protein
+• Hydration: 500ml water
+• Avoid heavy fats
+
+**INTRA-WORKOUT:**
+• Hydration: 200-300ml every 15min
+• Electrolytes if >60min session
+
+**POST-WORKOUT (within 1 hour):**
+• Fast protein: 20-40g
+• Simple carbs: 0.5g per kg bodyweight
+• Rehydration: 1.5x sweat loss
+
+**DAILY DISTRIBUTION:**
+• 3-5 balanced meals
+• Protein with every meal
+• Fiber: 30-40g daily
+• Hydration: 3-4 liters
+
+**🥗 FOOD QUALITY PRIORITIES:**
+1. Whole, unprocessed foods
+2. Lean protein sources
+3. Complex carbohydrates
+4. Healthy fats
+5. Colorful vegetables
+
+**📋 SUPPLEMENTATION GUIDE:**
+• **Essential:** Protein powder, Creatine, Omega-3
+• **Conditional:** Vitamin D, Magnesium, Caffeine
+• **Timing:** Based on training schedule
+
+**⚡ ADJUSTMENT PROTOCOL:**
+• Weight not changing? Adjust calories ±200
+• Low energy? Increase carbs 20-30g
+• Poor recovery? Increase protein 20g
+• Digestive issues? Adjust fiber intake
+
+**📊 TRACKING RECOMMENDATIONS:**
+1. Use food scale for accuracy
+2. Track for 2 weeks minimum
+3. Adjust based on progress
+4. Consider professional guidance`
+        }
+    };
+    
+    // Determine which template to use
+    if (msg.includes('workout') || msg.includes('routine') || msg.includes('plan')) {
+        return professionalTemplates.workout.content;
+    } else if (msg.includes('nutrition') || msg.includes('diet') || msg.includes('meal')) {
+        return professionalTemplates.nutrition.content;
+    } else if (msg.includes('form') || msg.includes('technique')) {
+        return getProfessionalFormResponse(msg);
+    } else if (msg.includes('recovery') || msg.includes('rest')) {
+        return getProfessionalRecoveryResponse();
+    } else {
+        return `**🤖 Professional Fitness Guidance**
+
+I understand you're asking about fitness-related topics. Here's how I can assist you professionally:
+
+**🎯 EXPERT AREAS:**
+1. **Workout Programming** - Custom routines, periodization, progression
+2. **Nutrition Planning** - Macros, meal timing, supplementation
+3. **Form Analysis** - Exercise technique, correction, safety
+4. **Recovery Optimization** - Sleep, stress management, deloading
+5. **Progress Tracking** - Metrics, adjustments, goal setting
+
+**💡 PROFESSIONAL APPROACH:**
+• Evidence-based recommendations
+• Individualized programming
+• Safety-first methodology
+• Progressive adaptation
+
+**📋 FOR SPECIFIC GUIDANCE:**
+• Ask about particular exercises
+• Request meal plan examples
+• Get form correction tips
+• Discuss recovery strategies
+
+**⚡ QUICK START:**
+Try commands like:
+• "/analyze" - Workout analysis
+• "/nutrition" - Meal planning
+• "/formcheck" - Technique review
+• "/recovery" - Optimization tips
+
+*Your current profile indicates ${document.getElementById('level').value} level with ${document.getElementById('goal').value} goals. I'll tailor my advice accordingly.*`;
+    }
+}
+
+// Add these CSS styles at the end of your existing styles
+const professionalStyles = `
+/* ================ PROFESSIONAL CHATBOT ENHANCEMENTS ================ */
+
+.openai-status-indicator {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--card-bg);
+}
+
+.openai-status-indicator.online {
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+    animation: pulse 2s infinite;
+}
+
+.openai-status-indicator.offline {
+    background: var(--danger);
+}
+
+.openai-status-indicator.testing {
+    background: var(--warning);
+    animation: pulse-fast 1s infinite;
+}
+
+@keyframes pulse-fast {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.pulse-indicator {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+    z-index: -1;
+}
+
+.ai-badge {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.feature-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.feature-card:hover {
+    background: rgba(99, 102, 241, 0.1);
+    transform: translateY(-2px);
+}
+
+.feature-card i {
+    font-size: 1.2rem;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+}
+
+.professional-welcome {
+    border: 2px solid rgba(99, 102, 241, 0.3);
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+}
+
+.professional-suggestions {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.8));
+    border-top: 2px solid rgba(99, 102, 241, 0.2);
+}
+
+.suggestion-card.professional {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.suggestion-card.professional:hover {
+    background: rgba(99, 102, 241, 0.15);
+    transform: translateY(-3px);
+    border-color: var(--primary);
+}
+
+.suggestion-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    font-size: 1rem;
+}
+
+.suggestion-content {
+    flex: 1;
+}
+
+.suggestion-title {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-main);
+}
+
+.suggestion-desc {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.suggestion-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--accent);
+    color: white;
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.message-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.action-btn {
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--text-main);
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s;
+}
+
+.action-btn:hover {
+    background: rgba(99, 102, 241, 0.2);
+    transform: translateY(-1px);
+}
+
+.typing-text {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-left: 10px;
+}
+
+.api-status.testing {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--warning);
+}
+
+.chatbot-tool-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.chatbot-tool-btn:hover {
+    background: rgba(99, 102, 241, 0.2);
+    transform: scale(1.1);
+}
+
+/* Command suggestions */
+.command-suggestions {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    z-index: 1000;
+}
+
+.command-item {
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.command-item:hover {
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.command-prefix {
+    color: var(--primary);
+    font-weight: 700;
+    font-family: monospace;
+}
+
+.command-desc {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+/* Response formatting */
+.response-section {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 12px;
+    border-left: 4px solid var(--primary);
+}
+
+.response-section-title {
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.response-section.warning {
+    border-left-color: var(--warning);
+    background: rgba(245, 158, 11, 0.05);
+}
+
+.response-section.success {
+    border-left-color: var(--accent);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.response-section.danger {
+    border-left-color: var(--danger);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+/* Metrics display */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.metric-card {
+    text-align: center;
+    padding: 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 5px;
+}
+
+.metric-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+`;
+
+// Add the styles to the page
+document.head.insertAdjacentHTML('beforeend', `<style>${professionalStyles}</style>`);
+
+    function toggleChatbot() {
+      const window = document.getElementById('chatbotWindow');
+      window.style.display = window.style.display === 'flex' ? 'none' : 'flex';
+      
+      if (window.style.display === 'flex') {
+        document.getElementById('chatbotInput').focus();
+        
+        // Initialize chatbot if first time
+        if (document.getElementById('chatbotMessages').children.length <= 1) {
+          showAdvancedWelcomeMessage();
+        }
+      }
+    }
+
+    function showAdvancedWelcomeMessage() {
+      const messagesDiv = document.getElementById('chatbotMessages');
+      
+      // Clear everything except suggestions
+      const suggestions = document.getElementById('chatbotSuggestions');
+      messagesDiv.innerHTML = '';
+      if (suggestions) {
+        messagesDiv.appendChild(suggestions);
+      }
+      
+      const welcomeMsg = `
+        <div class="message bot-message fade-in">
+          <div class="message-header">
+            <div class="coach-badge">
+              <i class="fas fa-robot" style="color: var(--primary);"></i>
+              <strong>AI Fitness Coach</strong>
+              <div class="coach-credentials">
+                <span class="credential-tag">NASM Certified</span>
+                <span class="credential-tag">AI Powered</span>
+                <span class="credential-tag">Real-time</span>
+              </div>
+            </div>
+            <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+          </div>
+          <div class="message-content">
+            <strong>👋 Welcome to your AI Fitness Coach!</strong>
+            <p style="margin: 10px 0;">I'm powered by Google's Gemini AI and ready to help you achieve your fitness goals.</p>
+            
+            <div class="section-title">
+              <h4>I can help you with:</h4>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0;">
+              <div style="background: rgba(16, 185, 129, 0.1); padding: 10px; border-radius: 8px;">
+                <i class="fas fa-dumbbell" style="color: var(--accent);"></i>
+                <div style="font-weight: 600; font-size: 0.85rem;">Workout Plans</div>
+              </div>
+              <div style="background: rgba(99, 102, 241, 0.1); padding: 10px; border-radius: 8px;">
+                <i class="fas fa-apple-alt" style="color: var(--primary);"></i>
+                <div style="font-weight: 600; font-size: 0.85rem;">Nutrition Advice</div>
+              </div>
+              <div style="background: rgba(245, 158, 11, 0.1); padding: 10px; border-radius: 8px;">
+                <i class="fas fa-user-check" style="color: var(--warning);"></i>
+                <div style="font-weight: 600; font-size: 0.85rem;">Form Analysis</div>
+              </div>
+              <div style="background: rgba(168, 85, 247, 0.1); padding: 10px; border-radius: 8px;">
+                <i class="fas fa-chart-line" style="color: var(--secondary);"></i>
+                <div style="font-weight: 600; font-size: 0.85rem;">Progress Tracking</div>
+              </div>
+            </div>
+            
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 15px;">
+              <i class="fas fa-lightbulb"></i> <strong>Pro Tip:</strong> I can analyze your current workout plan or create a custom one based on your goals!
+            </p>
+          </div>
+          
+          <div class="message-footer">
+            <button class="action-btn small" onclick="analyzeCurrentWorkout()">
+              <i class="fas fa-chart-line"></i> Analyze My Workout
+            </button>
+            <button class="action-btn small" onclick="getUserProfileForAI()">
+              <i class="fas fa-user"></i> Use My Profile
+            </button>
+          </div>
+        </div>
+      `;
+      
+      messagesDiv.insertAdjacentHTML('afterbegin', welcomeMsg);
+    }
+
+    async function sendChatMessage() {
+    if (isChatbotProcessing) {
+        showNotification('Please wait for current response to complete', 'warning');
+        return;
+    }
+    
+    const input = document.getElementById('chatbotInput');
+    const message = input.value.trim();
+    
+    if (!message) {
+        showNotification('Please enter a message first', 'info');
+        return;
+    }
+    
+    // Clear any previous command suggestions
+    hideCommandSuggestions();
+    
+    // Display user message with professional formatting
+    addProfessionalMessage(message, 'user');
+    input.value = '';
+    isChatbotProcessing = true;
+    
+    // Show enhanced typing indicator
+    const typingIndicator = document.getElementById('typingIndicator');
+    typingIndicator.style.display = 'flex';
+    typingIndicator.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-text">Professional AI analyzing...</div>
+    `;
+    
+    try {
+        // Get professional AI response
+        const startTime = performance.now();
+        const aiResponse = await getProfessionalAIResponse(message);
+        const endTime = performance.now();
+        const responseTime = Math.round(endTime - startTime);
+        
+        // Hide typing indicator
+        typingIndicator.style.display = 'none';
+        
+        // Add AI response with performance metrics
+        addProfessionalAIResponse(aiResponse, responseTime);
+        
+        // Store in conversation memory
+        conversationContext.conversationHistory.push({ 
+            role: 'user', 
+            content: message, 
+            timestamp: new Date().toISOString() 
+        });
+        conversationContext.conversationHistory.push({ 
+            role: 'assistant', 
+            content: aiResponse, 
+            timestamp: new Date().toISOString(),
+            responseTime: responseTime 
+        });
+        
+        // Save to localStorage
+        saveConversationMemory();
+        
+        // Log performance
+        console.log(`AI Response Time: ${responseTime}ms`);
+        
+        // Show success notification for long responses
+        if (responseTime > 2000) {
+            showNotification(`AI processed your request in ${responseTime}ms`, 'info');
+        }
+        
+    } catch (error) {
+        console.error('Professional AI Processing Error:', error);
+        typingIndicator.style.display = 'none';
+        
+        // Enhanced error handling
+        const errorResponse = handleAIError(error, message);
+        addProfessionalAIResponse(errorResponse, 0);
+        
+        showNotification('AI processing encountered an issue. Using enhanced responses.', 'warning');
+    } finally {
+        isChatbotProcessing = false;
+        
+        // Focus back on input
+        setTimeout(() => {
+            input.focus();
+        }, 100);
+    }
+}
+
+function addProfessionalMessage(text, sender) {
+    const messagesDiv = document.getElementById('chatbotMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender === 'user' ? 'user-message' : 'bot-message'} fade-in professional`;
+    
+    const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    const messageId = 'msg_' + Date.now() + Math.random().toString(36).substr(2, 9);
+    
+    messageDiv.id = messageId;
+    
+    if (sender === 'user') {
+        messageDiv.innerHTML = `
+            <div class="message-header">
+                <div class="user-badge">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 24px; height: 24px; background: rgba(16, 185, 129, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-user" style="color: var(--accent); font-size: 0.8rem;"></i>
+                        </div>
+                        <div>
+                            <strong style="font-size: 0.85rem;">You</strong>
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 1px;">Active User</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="message-time">${time}</div>
+            </div>
+            <div class="message-content">${escapeHtml(text)}</div>
+            <div class="message-actions">
+                <button class="action-btn" onclick="copyMessage('${messageId}')" title="Copy message">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+                <button class="action-btn" onclick="editMessage('${messageId}')" title="Edit message">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+            </div>
+        `;
+    } else {
+        // Bot message formatting is handled in addProfessionalAIResponse
+    }
+    
+    messagesDiv.appendChild(messageDiv);
+    scrollToBottom();
+    
+    // Hide suggestions after user message
+    const suggestions = document.querySelector('.professional-suggestions');
+    if (suggestions && sender === 'user') {
+        suggestions.style.opacity = '0.5';
+        setTimeout(() => {
+            suggestions.style.display = 'none';
+        }, 300);
+    }
+}
+
+function addProfessionalAIResponse(text, responseTime) {
+    const messagesDiv = document.getElementById('chatbotMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message bot-message fade-in professional-response';
+    
+    const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    const messageId = 'msg_' + Date.now() + Math.random().toString(36).substr(2, 9);
+    
+    messageDiv.id = messageId;
+    
+    // Format the response
+    const formattedResponse = formatProfessionalResponse(text);
+    
+    messageDiv.innerHTML = `
+        <div class="message-header">
+            <div class="coach-badge">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="position: relative;">
+                        <div style="width: 28px; height: 28px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-robot" style="color: white; font-size: 0.9rem;"></i>
+                        </div>
+                        <div class="pulse-indicator" style="width: 12px; height: 12px; top: -3px; right: -3px;"></div>
+                    </div>
+                    <div>
+                        <strong style="font-size: 0.85rem;">AI Fitness Coach Pro</strong>
+                        <div style="display: flex; gap: 6px; margin-top: 2px;">
+                            <span class="credential-tag" style="font-size: 0.6rem; padding: 1px 6px;">Expert</span>
+                            ${responseTime > 0 ? `<span class="credential-tag" style="background: rgba(16, 185, 129, 0.2); color: var(--accent); font-size: 0.6rem; padding: 1px 6px;">${responseTime}ms</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="message-time">${time}</div>
+        </div>
+        <div class="message-content">${formattedResponse}</div>
+        <div class="message-actions">
+            <button class="action-btn" onclick="copyMessage('${messageId}')" title="Copy response">
+                <i class="fas fa-copy"></i> Copy
+            </button>
+            <button class="action-btn" onclick="saveResponse('${messageId}')" title="Save to favorites">
+                <i class="fas fa-star"></i> Save
+            </button>
+            <button class="action-btn" onclick="speakText('${escapeHtml(text).replace(/'/g, "\\'").substring(0, 500)}')" title="Listen to response">
+                <i class="fas fa-volume-up"></i> Listen
+            </button>
+            <button class="action-btn" onclick="provideFeedback('${messageId}')" title="Provide feedback">
+                <i class="fas fa-thumbs-up"></i> Feedback
+            </button>
+        </div>
+    `;
+    
+    messagesDiv.appendChild(messageDiv);
+    scrollToBottom();
+}
+
+function formatProfessionalResponse(text) {
+    // Enhanced formatting for professional responses
+    let formatted = escapeHtml(text);
+    
+    // Convert markdown-like formatting
+    formatted = formatted
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/__(.*?)__/g, '<u>$1</u>')
+        .replace(/~~(.*?)~~/g, '<s>$1</s>')
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+        .replace(/^# (.*$)/gm, '<h3 style="color: var(--primary); margin: 20px 0 10px 0; font-size: 1.1rem;">$1</h3>')
+        .replace(/^## (.*$)/gm, '<h4 style="color: var(--primary); margin: 15px 0 8px 0; font-size: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 5px;">$1</h4>')
+        .replace(/^### (.*$)/gm, '<h5 style="color: var(--accent); margin: 12px 0 6px 0; font-size: 0.9rem;">$1</h5>')
+        .replace(/\n- /g, '<br>• ')
+        .replace(/\n\d+\./g, '<br><span style="color: var(--primary); font-weight: bold; margin-right: 8px;">$&</span>')
+        .replace(/\n\n/g, '</div><div style="margin-top: 15px;">')
+        .replace(/\n/g, '<br>');
+    
+    // Add response sections
+    formatted = formatted.replace(/\[SECTION:(\w+)\](.*?)\[\/SECTION\]/gs, function(match, type, content) {
+        return `<div class="response-section ${type.toLowerCase()}">
+            <div class="response-section-title">
+                <i class="fas fa-${getSectionIcon(type)}"></i>
+                ${getSectionTitle(type)}
+            </div>
+            <div>${content.trim()}</div>
+        </div>`;
+    });
+    
+    // Add metrics display
+    formatted = formatted.replace(/\[METRICS\](.*?)\[\/METRICS\]/gs, function(match, content) {
+        const metrics = content.split('|').map(m => {
+            const [label, value] = m.split(':');
+            return `<div class="metric-card">
+                <div class="metric-value">${value || 'N/A'}</div>
+                <div class="metric-label">${label || 'Metric'}</div>
+            </div>`;
+        }).join('');
+        
+        return `<div class="metrics-grid">${metrics}</div>`;
+    });
+    
+    return `<div>${formatted}</div>`;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function getSectionIcon(type) {
+    const icons = {
+        'WARNING': 'exclamation-triangle',
+        'SUCCESS': 'check-circle',
+        'DANGER': 'exclamation-circle',
+        'INFO': 'info-circle',
+        'TIP': 'lightbulb',
+        'NOTE': 'sticky-note',
+        'IMPORTANT': 'bullhorn'
+    };
+    return icons[type] || 'info-circle';
+}
+
+function getSectionTitle(type) {
+    const titles = {
+        'WARNING': 'Important Warning',
+        'SUCCESS': 'Success Indicators',
+        'DANGER': 'Safety Alert',
+        'INFO': 'Information',
+        'TIP': 'Pro Tip',
+        'NOTE': 'Note',
+        'IMPORTANT': 'Important'
+    };
+    return titles[type] || type;
+}
+
+function scrollToBottom() {
+    const messagesDiv = document.getElementById('chatbotMessages');
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function handleAIError(error, originalMessage) {
+    console.error('AI Error Details:', {
+        error: error.message,
+        code: error.code,
+        originalMessage: originalMessage,
+        timestamp: new Date().toISOString()
+    });
+    
+    return `**⚠️ SYSTEM NOTICE: Enhanced Response Mode**
+
+Due to temporary connectivity issues with our AI service, I'm providing enhanced local guidance based on your query.
+
+**Original Query:** "${originalMessage.substring(0, 100)}${originalMessage.length > 100 ? '...' : ''}"
+
+**📋 ENHANCED GUIDANCE:**
+
+Based on your current profile and goals, here are professional recommendations:
+
+**1. Immediate Actions:**
+• Review current workout consistency
+• Check nutrition alignment with goals
+• Ensure proper recovery protocols
+• Monitor progress indicators
+
+**2. Technical Considerations:**
+• Form and technique optimization
+• Progressive overload implementation
+• Periodization planning
+• Recovery strategy adjustment
+
+**3. Safety Protocol:**
+• Always prioritize proper form
+• Listen to body feedback
+• Gradual progression
+• Regular deloading
+
+**🔧 NEXT STEPS:**
+1. Implement one change at a time
+2. Track results for 2-4 weeks
+3. Adjust based on feedback
+4. Consider professional guidance
+
+*Full AI features will resume automatically when connectivity is restored.*
+*Last updated: ${new Date().toLocaleTimeString()}*`;
+}
+
+    function addMessage(text, sender) {
+      const messagesDiv = document.getElementById('chatbotMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${sender === 'user' ? 'user-message' : 'bot-message'} fade-in`;
+      
+      const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      
+      if (sender === 'user') {
+        messageDiv.innerHTML = `
+          <div class="message-header">
+            <div class="user-badge">
+              <i class="fas fa-user" style="color: var(--accent);"></i>
+              <strong>You</strong>
+            </div>
+            <div class="message-time">${time}</div>
+          </div>
+          <div class="message-content">${text}</div>
+        `;
+      } else {
+        messageDiv.innerHTML = `
+          <div class="message-header">
+            <div class="coach-badge">
+              <i class="fas fa-robot" style="color: var(--primary);"></i>
+              <strong>AI Coach</strong>
+            </div>
+            <div class="message-time">${time}</div>
+          </div>
+          <div class="message-content">${text}</div>
+        `;
+      }
+      
+      messagesDiv.appendChild(messageDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      
+      // Hide suggestions after first user message
+      const suggestions = document.getElementById('chatbotSuggestions');
+      if (suggestions && sender === 'user') {
+        suggestions.style.display = 'none';
+      }
+    }
+
+    function addAIResponse(text) {
+      const messagesDiv = document.getElementById('chatbotMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message bot-message fade-in';
+      
+      const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      
+      // Format the AI response
+      const formattedText = formatAIResponse(text);
+      
+      messageDiv.innerHTML = `
+        <div class="message-header">
+          <div class="coach-badge">
+            <i class="fas fa-robot" style="color: var(--primary);"></i>
+            <strong>AI Coach</strong>
+            <div class="coach-credentials">
+              <span class="credential-tag">Gemini AI</span>
+              <span class="credential-tag">Expert</span>
+            </div>
+          </div>
+          <div class="message-time">${time}</div>
+        </div>
+        <div class="message-content">${formattedText}</div>
+        <div class="message-footer">
+          <button class="action-btn small" onclick="copyToClipboard(this)">
+            <i class="fas fa-copy"></i> Copy
+          </button>
+          <button class="action-btn small" onclick="saveAIResponse('${text.replace(/'/g, "\\'").substring(0, 100)}')">
+            <i class="fas fa-save"></i> Save
+          </button>
+          <button class="action-btn small" onclick="speakText('${text.replace(/'/g, "\\'").substring(0, 500)}')">
+            <i class="fas fa-volume-up"></i> Listen
+          </button>
+        </div>
+      `;
+      
+      messagesDiv.appendChild(messageDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+
+    function getUserContextForAI() {
+      const gender = document.getElementById('gender').value;
+      const age = document.getElementById('age').value;
+      const weight = document.getElementById('weight').value;
+      const height = document.getElementById('height').value;
+      const level = document.getElementById('level').value;
+      const goal = document.getElementById('goal').value;
+      const focus = document.getElementById('focus').value;
+      const workoutsPerWeek = document.getElementById('workoutsPerWeek').value;
+      const activity = document.getElementById('activity').value;
+      
+      // Only include valid data
+      let context = "User profile:\n";
+      
+      if (gender && gender !== 'Prefer not to say') context += `- Gender: ${gender}\n`;
+      if (age && parseInt(age) > 0) context += `- Age: ${age}\n`;
+      if (weight && parseInt(weight) > 0) context += `- Weight: ${weight} kg\n`;
+      if (height && parseInt(height) > 0) context += `- Height: ${height} cm\n`;
+      if (level) context += `- Experience level: ${level}\n`;
+      if (goal) context += `- Primary goal: ${goal}\n`;
+      if (focus) context += `- Focus area: ${focus}\n`;
+      if (workoutsPerWeek) context += `- Workouts per week: ${workoutsPerWeek}\n`;
+      
+      // Add activity level description
+      const activityLabels = {
+        '1.2': 'Sedentary',
+        '1.375': 'Lightly Active',
+        '1.55': 'Moderately Active',
+        '1.725': 'Very Active',
+        '1.9': 'Extremely Active'
+      };
+      if (activity && activityLabels[activity]) {
+        context += `- Activity level: ${activityLabels[activity]}\n`;
+      }
+      
+      // Add current workout if available
+      if (currentProtocolText) {
+        context += "\nCurrent workout plan is generated. Can analyze or modify it.";
+      }
+      
+      return context;
+    }
+
+    function getEnhancedLocalResponse(message) {
+      const msg = message.toLowerCase();
+      
+      // Enhanced response patterns
+      if (msg.match(/(create|make|design|build).*(workout|routine|program|plan|split)/)) {
+        return createWorkoutPlanResponse();
+      }
+      
+      if (msg.match(/(analyze|review|check|evaluate).*(workout|routine|program)/)) {
+        return analyzeWorkoutResponse();
+      }
+      
+      if (msg.match(/(nutrition|diet|food|eat|macros|calories|protein)/)) {
+        return getNutritionResponse();
+      }
+      
+      if (msg.match(/(squat|deadlift|bench|press|row|pull.*up|pull.*down)/)) {
+        return getExerciseFormResponse(msg);
+      }
+      
+      if (msg.match(/(recovery|rest|sleep|overtraining|overtrain|deload)/)) {
+        return getRecoveryResponse();
+      }
+      
+      if (msg.match(/(cardio|hiit|running|cycling|aerobic|endurance)/)) {
+        return getCardioResponse();
+      }
+      
+      if (msg.match(/(supplement|protein.*powder|creatine|pre.*workout|bcaa)/)) {
+        return getSupplementsResponse();
+      }
+      
+      // Default response for unknown queries
+      return `I understand you're asking about fitness! Here's what I can help with:
+
+**💪 Workout Design:** I can create custom workout plans based on your goals
+**🍎 Nutrition:** Get personalized meal plans and macro guidance
+**🏋️ Form Check:** Detailed exercise form breakdowns
+**📊 Progress:** Help track and optimize your fitness journey
+**🛌 Recovery:** Sleep, rest, and recovery strategies
+
+Try asking something specific like:
+• "Create a 4-day workout split for muscle building"
+• "What should I eat before and after workouts?"
+• "How do I improve my squat form?"
+• "Best cardio for fat loss?"`;
+    }
+
+    // Helper functions for enhanced responses
+    function createWorkoutPlanResponse() {
+      const goal = document.getElementById('goal').value || 'Build muscle';
+      const level = document.getElementById('level').value || 'Intermediate';
+      const focus = document.getElementById('focus').value || 'Full body';
+      
+      let plan = `**Custom ${goal} Workout Plan for ${level} Level**
+
+**Weekly Structure (${document.getElementById('workoutsPerWeek').value || 3} days/week):**`;
+
+      if (goal === 'Build muscle') {
+        plan += `
+**Hypertrophy Focus (${focus}):**
+• Compound lifts: 3-4 sets of 8-12 reps
+• Isolation: 3 sets of 12-15 reps
+• Rest: 60-90 seconds between sets
+• Progressive overload weekly
+
+**Sample ${focus} Day:**
+1. Main compound (Bench/Squat/Deadlift): 4x8-10
+2. Secondary compound: 3x10-12
+3. Accessory 1: 3x12-15
+4. Accessory 2: 3x15-20
+5. Finisher: 2 sets to failure`;
+      } else if (goal === 'Lose fat') {
+        plan += `
+**Fat Loss Protocol:**
+• Strength: 3-4 sets of 6-10 reps
+• Metabolic: Circuit training
+• Cardio: 20-30 min post-workout
+• Rest: 30-45 seconds between exercises
+
+**Sample HIIT Circuit:**
+1. Compound movement: 45s on, 15s off
+2. Plyometric: 45s on, 15s off
+3. Core: 45s on, 15s off
+4. Repeat 3-4 rounds`;
+      } else {
+        plan += `
+**Maintenance & Health:**
+• Full body focus
+• Moderate intensity
+• Mobility work included
+• Enjoyable activities
+
+**Sample Full Body:**
+1. Squat variation: 3x12-15
+2. Push variation: 3x12-15
+3. Pull variation: 3x12-15
+4. Core: 3x15-20
+5. Cardio: 10-15 min`;
+      }
+      
+      plan += `
+
+**Pro Tips:**
+• Track your workouts
+• Listen to your body
+• Stay consistent
+• Adjust based on progress`;
+      
+      return plan;
+    }
+
+    function analyzeWorkoutResponse() {
+      if (!currentProtocolText) {
+        return "I don't see a current workout plan. Please generate one first using the main generator, then I can analyze it for you!";
+      }
+      
+      const goal = document.getElementById('goal').value;
+      const level = document.getElementById('level').value;
+      
+      return `**Workout Analysis Report**
+
+Based on your ${goal} goal and ${level} level:
+
+**✅ Strengths:**
+• Appropriate exercise selection
+• Balanced volume distribution
+• Proper warm-up and cool-down structure
+• Realistic time commitment
+
+**📈 Optimization Suggestions:**
+1. **Progressive Overload:** Increase weight by 2.5-5% weekly
+2. **Exercise Variation:** Rotate exercises every 4-6 weeks
+3. **Recovery:** Ensure 48-72 hours between training same muscle groups
+4. **Form Focus:** Prioritize technique over weight
+
+**🔧 Specific Recommendations:**
+• Add 1-2 mobility exercises to warm-up
+• Consider supersets for time efficiency
+• Track RPE (Rate of Perceived Exertion) each session
+• Deload every 4-8 weeks
+
+**🎯 Action Steps:**
+1. Implement progressive overload
+2. Track workouts consistently
+3. Adjust based on recovery
+4. Re-assess in 4 weeks`;
+    }
+
+    function getNutritionResponse() {
+      const goal = document.getElementById('goal').value;
+      const weight = document.getElementById('weight').value || 70;
+      
+      let protein = 0;
+      let advice = "";
+      
+      if (goal === 'Build muscle') {
+        protein = Math.round(weight * 2.2);
+        advice = `**Muscle Building Nutrition (${goal})**
+
+**Daily Targets:**
+• Protein: ${protein}g (${Math.round(protein/weight)}g per kg)
+• Carbs: 3-5g per kg of bodyweight
+• Fats: 0.8-1g per kg
+• Calories: 10-20% above maintenance
+
+**Meal Timing:**
+1. **Pre-workout (1-2 hours before):** Carbs + moderate protein
+2. **Post-workout (within 2 hours):** Fast protein + simple carbs
+3. **Throughout day:** Balanced meals every 3-4 hours
+
+**Best Protein Sources:** Chicken, fish, eggs, Greek yogurt, protein powder
+**Best Carb Sources:** Rice, potatoes, oats, fruits, vegetables
+**Best Fat Sources:** Avocado, nuts, olive oil, fatty fish`;
+      } else if (goal === 'Lose fat') {
+        protein = Math.round(weight * 2.4);
+        advice = `**Fat Loss Nutrition (${goal})**
+
+**Daily Targets:**
+• Protein: ${protein}g (${Math.round(protein/weight)}g per kg) - Preserve muscle!
+• Carbs: 1-3g per kg of bodyweight
+• Fats: 0.6-0.8g per kg
+• Calories: 15-25% below maintenance
+
+**Strategies:**
+1. **Protein First:** Start each meal with protein
+2. **Fiber Focus:** Vegetables with every meal
+3. **Hydration:** 3-4L water daily
+4. **Meal Timing:** Don't skip meals
+
+**Food Choices:**
+• Lean proteins: Chicken breast, turkey, white fish
+• High-volume veggies: Broccoli, spinach, cauliflower
+• Healthy fats in moderation
+• Limit processed foods and sugars`;
+      } else {
+        protein = Math.round(weight * 1.8);
+        advice = `**Maintenance Nutrition (${goal})**
+
+**Daily Targets:**
+• Protein: ${protein}g (${Math.round(protein/weight)}g per kg)
+• Carbs: 2-4g per kg of bodyweight
+• Fats: 0.8-1g per kg
+• Calories: At maintenance level
+
+**Balanced Approach:**
+1. **Variety:** Different protein sources
+2. **Whole Foods:** Minimize processed options
+3. **Hydration:** Adequate water intake
+4. **Moderation:** Enjoy treats in moderation
+
+**Healthy Habits:**
+• Cook at home when possible
+• Read nutrition labels
+• Listen to hunger cues
+• Stay consistent`;
+      }
+      
+      advice += `
+
+**💡 Pro Tips:**
+• Track food intake for 1-2 weeks to understand habits
+• Prepare meals in advance
+• Don't eliminate entire food groups
+• Adjust based on progress and energy levels`;
+      
+      return advice;
+    }
+
+    function getExerciseFormResponse(msg) {
+      const msgLower = msg.toLowerCase();
+      
+      if (msgLower.includes('squat')) {
+        return `**🏋️ Squat Form Guide:**
+
+**Setup:**
+• Feet shoulder-width apart, toes slightly out
+• Bar positioned on upper back (not neck)
+• Chest up, core braced
+
+**Execution:**
+1. Break at hips and knees simultaneously
+2. Lower until thighs parallel to floor
+3. Keep knees tracking over toes
+4. Drive through heels to stand
+5. Squeeze glutes at top
+
+**Common Mistakes:**
+❌ Knees caving inward
+❌ Rounding lower back
+❌ Heels lifting off ground
+❌ Looking down
+
+**Pro Tips:**
+• Use a mirror for form check
+• Start with bodyweight squats
+• Focus on depth before weight`;
+      } else if (msgLower.includes('bench') || msgLower.includes('press')) {
+        return `**💪 Bench Press Form Guide:**
+
+**Setup:**
+• Lie with eyes under bar
+• Feet planted firmly on floor
+• Shoulder blades retracted and depressed
+• Arch back slightly
+
+**Grip & Execution:**
+• Grip slightly wider than shoulders
+• Lower bar to mid-chest
+• Keep elbows at 45-60 degree angle
+• Press straight up to starting position
+• Don't bounce bar off chest
+
+**Safety:**
+• Use spotter for heavy weights
+• Use safety bars if available
+• Don't lift shoulders off bench`;
+      } else if (msgLower.includes('deadlift')) {
+        return `**🏋️ Deadlift Form Guide:**
+
+**Setup:**
+• Feet hip-width apart
+• Bar over mid-foot
+• Grip just outside legs
+• Hips higher than knees
+
+**Execution:**
+1. Take slack out of bar
+2. Push through floor with legs
+3. Keep bar close to body
+4. Stand tall, squeeze glutes
+5. Lower under control
+
+**Common Mistakes:**
+❌ Rounding back
+❌ Hips rising too fast
+❌ Bar drifting forward
+❌ Jerking the weight`;
+      } else if (msgLower.includes('pull') && msgLower.includes('up')) {
+        return `**💪 Pull-up Form Guide:**
+
+**Setup:**
+• Grip slightly wider than shoulders
+• Hang with arms fully extended
+• Engage lats before pulling
+
+**Execution:**
+1. Pull elbows down and back
+2. Bring chest to bar
+3. Lower with control
+4. Full range of motion
+
+**Progressions:**
+• Band-assisted pull-ups
+• Negative pull-ups
+• Inverted rows
+• Lat pulldowns`;
+      } else {
+        return `**🏋️ General Exercise Form Tips:**
+
+1. **Start Light:** Master form before adding weight
+2. **Full Range:** Complete each rep through full motion
+3. **Control:** Don't use momentum, control the weight
+4. **Breathing:** Exhale on exertion, inhale on return
+5. **Mind-Muscle:** Focus on target muscle working
+
+For specific exercise form, ask about: squats, bench press, deadlifts, pull-ups, rows, or overhead press.`;
+      }
+    }
+
+    function getRecoveryResponse() {
+      return `**🛌 Recovery & Rest Strategies:**
+
+**Sleep (Most Important):**
+• 7-9 hours quality sleep nightly
+• Consistent sleep schedule
+• Dark, cool sleeping environment
+
+**Active Recovery:**
+• Light cardio: 20-30 min walking/biking
+• Mobility work: 10-15 min daily
+• Foam rolling: Target sore muscles
+
+**Nutrition for Recovery:**
+• Post-workout: Protein + carbs within 2 hours
+• Hydration: 3-4L water daily
+• Anti-inflammatory foods: Berries, fatty fish
+
+**Deload Weeks:**
+• Every 4-8 weeks
+• Reduce volume by 40-50%
+• Maintain technique practice
+
+**Listen to Your Body:**
+• Persistent soreness = need more recovery
+• Decreased performance = time to deload
+• Lack of motivation = mental break needed`;
+    }
+
+    function getCardioResponse() {
+      return `**🏃‍♂️ Cardio Training Guide:**
+
+**For Fat Loss:**
+• **HIIT:** 20-30 min, 2-3x/week
+• **LISS:** 30-45 min, 3-4x/week
+• **Combine both for best results**
+
+**For Endurance:**
+• **Steady State:** 45-60 min, 2-3x/week
+• **Progressive:** Increase duration weekly
+• **Cross-train:** Mix different modalities
+
+**Best Timing:**
+• Post-workout (after weights)
+• Separate session (morning/evening)
+• Fasted (if experienced)
+
+**Intensity Zones:**
+• Zone 2 (60-70% HR max): Fat burning
+• Zone 3-4 (70-85%): Cardiovascular
+• Zone 5 (85-100%): HIIT intervals
+
+**Cardio Types:**
+• Running: Great for overall fitness
+• Cycling: Low impact, good for recovery
+• Rowing: Full body, high calorie burn
+• Swimming: Zero impact, great for joints`;
+    }
+
+    function getSupplementsResponse() {
+      return `**💊 Supplement Guide:**
+
+**Evidence-Based (Tier 1):**
+• **Protein Powder:** Convenient protein source
+• **Creatine Monohydrate:** Strength & power
+• **Caffeine:** Pre-workout energy
+• **Omega-3 Fish Oil:** Joint & heart health
+
+**Conditional Use (Tier 2):**
+• **Vitamin D:** If deficient/sunlight limited
+• **Magnesium:** Sleep & muscle function
+• **Beta-Alanine:** Endurance training
+• **Whey/Casein:** Specific timing needs
+
+**Food First Principle:**
+• Supplements SUPPLEMENT your diet
+• No supplement replaces whole foods
+• Quality varies between brands
+
+**Timing:**
+• Pre-workout: Caffeine, beta-alanine
+• Post-workout: Protein, carbs
+• Bedtime: Casein, magnesium
+
+**Safety:**
+• Research brands for quality
+• Start with low doses
+• Consult healthcare provider
+• Avoid proprietary blends`;
+    }
+
+    function formatAIResponse(text) {
+      // Clean and format the AI response
+      let formatted = text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/#{1,6}\s*(.*?)(?:\n|$)/g, '<h4 style="margin: 15px 0 10px 0; color: var(--primary);">$1</h4>')
+        .replace(/\n- /g, '<br>• ')
+        .replace(/\n\d+\./g, '<br>$&')
+        .replace(/\n\n/g, '</div><div style="margin-top: 10px;">')
+        .replace(/\n/g, '<br>');
+      
+      return `<div>${formatted}</div>`;
+    }
+
+    function copyToClipboard(button) {
+      const text = button.closest('.message').querySelector('.message-content').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(() => {
+          button.innerHTML = originalHTML;
+        }, 2000);
+      });
+    }
+
+    function saveAIResponse(response) {
+      // Save to localStorage
+      const savedResponses = JSON.parse(localStorage.getItem('aiFitnessResponses') || '[]');
+      savedResponses.push({
+        response: response.substring(0, 500),
+        timestamp: new Date().toISOString(),
+        context: getUserContextForAI()
+      });
+      
+      localStorage.setItem('aiFitnessResponses', JSON.stringify(savedResponses));
+      showNotification('AI response saved!', 'success');
+    }
+
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        const speech = new SpeechSynthesisUtterance(text);
+        speech.rate = 1.0;
+        speech.pitch = 1.0;
+        speech.volume = 1.0;
+        window.speechSynthesis.speak(speech);
+        showNotification('Reading response aloud...', 'info');
+      } else {
+        showNotification('Text-to-speech not supported in this browser', 'warning');
+      }
+    }
+
+    // Suggestion functions
+    function askSuggestion(type) {
+      let question = '';
+      
+      switch(type) {
+        case 'workout':
+          question = 'Create a workout plan for my goals';
+          break;
+        case 'nutrition':
+          question = 'Give me nutrition advice for my goals';
+          break;
+        case 'form':
+          question = 'How do I perform squats with proper form?';
+          break;
+        case 'recovery':
+          question = 'What are the best recovery strategies?';
+          break;
+      }
+      
+      document.getElementById('chatbotInput').value = question;
+      sendChatMessage();
+    }
+
+    function analyzeCurrentWorkout() {
+      if (!currentProtocolText) {
+        showNotification('Please generate a workout plan first!', 'warning');
+        return;
+      }
+      
+      const question = 'Analyze my current workout plan and suggest improvements';
+      document.getElementById('chatbotInput').value = question;
+      sendChatMessage();
+    }
+
+    function getUserProfileForAI() {
+      const question = 'Use my current profile to give personalized advice';
+      document.getElementById('chatbotInput').value = question;
+      sendChatMessage();
+    }
+
+    // ================ PDF GENERATION ================
+    function downloadPDF() {
+      if (!currentProtocolText || currentProtocolText.trim() === "") {
+        showNotification('Please generate a workout first!', 'error');
+        return;
+      }
+
+      const gender = document.getElementById('gender').value;
+      const age = document.getElementById('age').value;
+      const level = document.getElementById('level').value;
+      const goal = document.getElementById('goal').value;
+      const focus = document.getElementById('focus').value;
+      const weight = document.getElementById('weight').value;
+      const height = document.getElementById('height').value;
+      
+      const timestamp = new Date().toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      let pdfContent = `
+        <div style="padding: 40px; font-family: 'Helvetica', 'Arial', sans-serif; color: #333; line-height: 1.6;">
+          <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #6366f1;">
+            <h1 style="color: #6366f1; margin: 0 0 10px 0;">GYM PLANNER CAMTECH</h1>
+            <h3 style="color: #a855f7; margin: 0 0 15px 0;">Elite Protocol v3.5</h3>
+            <p style="color: #666; font-size: 14px; margin: 0;">Generated: ${timestamp}</p>
+          </div>
+          
+          <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #e2e8f0;">
+            <h2 style="color: #333; margin-top: 0; margin-bottom: 15px; font-size: 18px;">User Profile</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 14px;">
+              <div><strong style="color: #6366f1;">Gender:</strong> ${gender}</div>
+              <div><strong style="color: #6366f1;">Age:</strong> ${age}</div>
+              <div><strong style="color: #6366f1;">Weight:</strong> ${weight} kg</div>
+              <div><strong style="color: #6366f1;">Height:</strong> ${height} cm</div>
+              <div><strong style="color: #6366f1;">Experience:</strong> ${level}</div>
+              <div><strong style="color: #6366f1;">Goal:</strong> ${goal}</div>
+              <div><strong style="color: #6366f1;">Focus:</strong> ${focus}</div>
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 30px;">
+            <h2 style="color: #333; margin-top: 0; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #10b981; font-size: 20px;">
+              Personalized Workout Protocol
+            </h2>
+            <div style="background: white; padding: 25px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+              <div style="font-size: 15px; color: #444; white-space: pre-line;">
+                ${currentProtocolText.replace(/\n/g, '<br>')}
+              </div>
+            </div>
+          </div>
+          
+          <div style="text-align: center; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 12px;">
+            <p style="margin: 5px 0;">© ${new Date().getFullYear()} CAMTECH Gym Planner | Elite Protocol v3.5</p>
+            <p style="margin: 5px 0; font-style: italic;">"${document.getElementById('quoteBox').textContent || 'Stay consistent, stay strong'}"</p>
+          </div>
+        </div>
+      `;
+
+      const opt = {
+        margin: 10,
+        filename: `Camtech_Workout_${goal}_${focus}_${timestamp.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2,
+          useCORS: true
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait' 
+        }
+      };
+
+      html2pdf().set(opt).from(pdfContent).save().then(() => {
+        showNotification('PDF generated successfully!', 'success');
+      }).catch(err => {
+        console.error("Error generating PDF:", err);
+        showNotification('Error generating PDF. Please try again.', 'error');
+      });
+    }
+
+// ================ HELPER FUNCTIONS ================
+
+function copyMessage(messageId) {
+    const messageElement = document.getElementById(messageId);
+    if (!messageElement) return;
+    
+    const text = messageElement.querySelector('.message-content').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('Message copied to clipboard!', 'success');
+    }).catch(err => {
+        console.error('Copy failed:', err);
+        showNotification('Failed to copy message', 'error');
+    });
+}
+
+function saveResponse(messageId) {
+    const messageElement = document.getElementById(messageId);
+    if (!messageElement) return;
+    
+    const text = messageElement.querySelector('.message-content').textContent;
+    const timestamp = new Date().toLocaleString();
+    
+    // Get saved responses
+    const savedResponses = JSON.parse(localStorage.getItem('savedAIResponses') || '[]');
+    savedResponses.push({
+        id: messageId,
+        text: text.substring(0, 500),
+        timestamp: timestamp,
+        type: 'ai_response'
+    });
+    
+    localStorage.setItem('savedAIResponses', JSON.stringify(savedResponses));
+    
+    showNotification('Response saved to favorites!', 'success');
+}
+
+function provideFeedback(messageId) {
+    const feedback = prompt('Please provide feedback for this response (optional):');
+    if (feedback !== null) {
+        // Store feedback
+        const feedbacks = JSON.parse(localStorage.getItem('aiFeedback') || '[]');
+        feedbacks.push({
+            messageId: messageId,
+            feedback: feedback,
+            timestamp: new Date().toISOString()
+        });
+        
+        localStorage.setItem('aiFeedback', JSON.stringify(feedbacks));
+        showNotification('Thank you for your feedback!', 'success');
+    }
+}
+
+function editMessage(messageId) {
+    const messageElement = document.getElementById(messageId);
+    if (!messageElement) return;
+    
+    const contentElement = messageElement.querySelector('.message-content');
+    const originalText = contentElement.textContent;
+    
+    const newText = prompt('Edit your message:', originalText);
+    if (newText !== null && newText.trim() !== originalText.trim()) {
+        contentElement.textContent = newText;
+        showNotification('Message updated!', 'info');
+        
+        // Update in conversation memory
+        const messageIndex = conversationContext.conversationHistory.findIndex(
+            msg => msg.role === 'user' && msg.content === originalText
+        );
+        
+        if (messageIndex !== -1) {
+            conversationContext.conversationHistory[messageIndex].content = newText;
+            conversationContext.conversationHistory[messageIndex].edited = true;
+            saveConversationMemory();
+        }
+    }
+}
+
+function showCommandSuggestions(inputText) {
+    const commands = [
+        { command: '/analyze', description: 'Analyze current workout' },
+        { command: '/plan', description: 'Generate workout plan' },
+        { command: '/nutrition', description: 'Get nutrition advice' },
+        { command: '/formcheck', description: 'Check exercise form' },
+        { command: '/recovery', description: 'Recovery strategies' },
+        { command: '/progress', description: 'Progress tracking' },
+        { command: '/help', description: 'Show all commands' },
+        { command: '/clear', description: 'Clear chat history' },
+        { command: '/settings', description: 'AI settings' }
+    ];
+    
+    const filteredCommands = commands.filter(cmd => 
+        cmd.command.toLowerCase().includes(inputText.toLowerCase().substring(1))
+    );
+    
+    if (filteredCommands.length === 0) return;
+    
+    // Create or update suggestions container
+    let suggestionsContainer = document.querySelector('.command-suggestions');
+    if (!suggestionsContainer) {
+        suggestionsContainer = document.createElement('div');
+        suggestionsContainer.className = 'command-suggestions';
+        document.querySelector('.chatbot-input').appendChild(suggestionsContainer);
+    }
+    
+    suggestionsContainer.innerHTML = filteredCommands.map(cmd => `
+        <div class="command-item" onclick="selectCommand('${cmd.command}')">
+            <span class="command-prefix">${cmd.command}</span>
+            <span class="command-desc">${cmd.description}</span>
+        </div>
+    `).join('');
+    
+    suggestionsContainer.style.display = 'block';
+}
+
+function hideCommandSuggestions() {
+    const suggestionsContainer = document.querySelector('.command-suggestions');
+    if (suggestionsContainer) {
+        suggestionsContainer.style.display = 'none';
+    }
+}
+
+function selectCommand(command) {
+    document.getElementById('chatbotInput').value = command + ' ';
+    hideCommandSuggestions();
+    document.getElementById('chatbotInput').focus();
+}
+
+function handleProfessionalCommand(command) {
+    const cmd = command.toLowerCase().trim();
+    
+    if (cmd === '/help' || cmd === '/commands') {
+        return `**Available Commands:**\n
+• /analyze - Analyze current workout\n
+• /plan - Generate workout plan\n
+• /nutrition - Get nutrition advice\n
+• /formcheck - Exercise form tips\n
+• /recovery - Recovery strategies\n
+• /clear - Clear chat history\n
+• /help - Show this help`;
+    }
+    
+    if (cmd.startsWith('/analyze')) {
+        if (!currentProtocolText) {
+            return "Please generate a workout plan first using the main generator!";
+        }
+        return "I'll analyze your workout plan and provide optimization suggestions.";
+    }
+    
+    if (cmd.startsWith('/plan')) {
+        return "I can create a personalized workout plan based on your profile.";
+    }
+    
+    if (cmd.startsWith('/nutrition')) {
+        return "Here's nutrition advice based on your goals...";
+    }
+    
+    if (cmd.startsWith('/formcheck')) {
+        return "For proper exercise form, focus on:\n• Maintain neutral spine\n• Controlled movements\n• Full range of motion\n• Proper breathing";
+    }
+    
+    if (cmd.startsWith('/recovery')) {
+        return "Recovery tips:\n• Sleep 7-9 hours\n• Stay hydrated\n• Active recovery\n• Proper nutrition";
+    }
+    
+    if (cmd.startsWith('/clear')) {
+        const messagesDiv = document.getElementById('chatbotMessages');
+        messagesDiv.innerHTML = '';
+        showProfessionalWelcomeMessage();
+        return "Chat history cleared!";
+    }
+    
+    return `Command not recognized: ${command.split(' ')[0]}\nType /help for available commands.`;
+}
+
+function getCommandHelp() {
+    return `**🤖 AI FITNESS COACH COMMANDS**
+
+**Core Commands:**
+• **/analyze** – Comprehensive workout analysis
+• **/plan** – Generate personalized workout plan
+• **/nutrition** – Nutrition planning & meal prep
+• **/formcheck [exercise]** – Exercise form analysis
+• **/recovery** – Recovery & rest optimization
+• **/progress** – Progress tracking & metrics
+
+**Utility Commands:**
+• **/help** – Show this help message
+• **/clear** – Clear conversation history
+• **/settings** – Configure AI preferences
+• **/save** – Save current conversation
+• **/export** – Export workout data
+
+**Examples:**
+• \`/analyze\` – Analyze current workout
+• \`/plan 4-day split\` – Create 4-day routine
+• \`/formcheck squat\` – Squat form analysis
+• \`/nutrition bulk\` – Bulking meal plan
+
+**💡 Tips:**
+• Commands are case-insensitive
+• Add arguments for specific requests
+• Use natural language for complex queries
+• Responses are saved in conversation memory`;
+}
+
+  </script>
+</body>
+</html>
+</body>
+</html>
