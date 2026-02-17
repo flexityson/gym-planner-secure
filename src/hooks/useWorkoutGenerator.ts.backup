@@ -1,0 +1,168 @@
+import { useState } from 'react';
+
+interface WorkoutParams {
+  gender: string;
+  age: number;
+  weight: number;
+  height: number;
+  level: string;
+  goal: string;
+  focus: string;
+  workoutsPerWeek: string;
+  activity: string;
+  intensityMod: string;
+}
+
+interface Exercise {
+  name: string;
+  sets: number;
+  reps: string;
+}
+
+interface Nutrition {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  tdee: number;
+}
+
+const FALLBACK_EXERCISES: Record<string, string[]> = {
+  'chest': ['Bench Press', 'Push-ups', 'Chest Flyes', 'Incline Dumbbell Press'],
+  'back': ['Pull-ups', 'Deadlifts', 'Bent Over Rows', 'Lat Pulldowns'],
+  'legs': ['Squats', 'Lunges', 'Leg Press', 'Calf Raises'],
+  'arms': ['Bicep Curls', 'Tricep Dips', 'Hammer Curls', 'Tricep Pushdowns'],
+  'shoulders': ['Overhead Press', 'Lateral Raises', 'Front Raises', 'Face Pulls'],
+  'full body': ['Burpees', 'Thrusters', 'Kettlebell Swings', 'Mountain Climbers']
+};
+
+export const useWorkoutGenerator = () => {
+  const [loading, setLoading] = useState(false);
+
+  const generateWorkout = async (params: WorkoutParams) => {
+    setLoading(true);
+    
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Generate workout based on parameters
+      const exercises = generateExercises(params);
+      const nutrition = calculateNutrition(params);
+      const protocol = generateProtocol(params, exercises);
+      
+      return { protocol, exercises, nutrition };
+    } catch (error) {
+      console.error('Workout generation error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generateExercises = (params: WorkoutParams): Exercise[] => {
+    const focus = params.focus.toLowerCase();
+    const exercisesList = FALLBACK_EXERCISES[focus] || FALLBACK_EXERCISES['full body'];
+    
+    return exercisesList.slice(0, 4).map((name, index) => ({
+      name,
+      sets: params.level === 'Advanced' ? 4 : params.level === 'Intermediate' ? 3 : 2,
+      reps: getRepRange(params.goal, params.level, index)
+    }));
+  };
+
+  const calculateNutrition = (params: WorkoutParams): Nutrition => {
+    const { weight, height, age, gender, activity, goal } = params;
+    
+    // Calculate BMR
+    let bmr;
+    if (gender === 'Male') {
+      bmr = 10 * weight + 6.25 * height - 5 * age + 5;
+    } else if (gender === 'Female') {
+      bmr = 10 * weight + 6.25 * height - 5 * age - 161;
+    } else {
+      bmr = ((10 * weight + 6.25 * height - 5 * age + 5) + 
+             (10 * weight + 6.25 * height - 5 * age - 161)) / 2;
+    }
+    
+    const tdee = bmr * parseFloat(activity);
+    
+    // Adjust for goal
+    let targetCalories;
+    let proteinMult, fatMult;
+    
+    switch(goal) {
+      case 'Build muscle':
+        targetCalories = tdee * 1.1;
+        proteinMult = 2.2;
+        fatMult = 0.8;
+        break;
+      case 'Lose fat':
+        targetCalories = tdee * 0.85;
+        proteinMult = 2.4;
+        fatMult = 0.7;
+        break;
+      default:
+        targetCalories = tdee;
+        proteinMult = 1.8;
+        fatMult = 0.8;
+    }
+    
+    const proteinGrams = Math.round((weight * proteinMult));
+    const fatGrams = Math.round((weight * fatMult));
+    const proteinCal = proteinGrams * 4;
+    const fatCal = fatGrams * 9;
+    const carbCal = targetCalories - proteinCal - fatCal;
+    const carbGrams = Math.round(carbCal / 4);
+    
+    return {
+      calories: Math.round(targetCalories),
+      protein: proteinGrams,
+      carbs: carbGrams,
+      fat: fatGrams,
+      tdee: Math.round(tdee)
+    };
+  };
+
+  const generateProtocol = (params: WorkoutParams, exercises: Exercise[]): string => {
+    const { goal, level, focus } = params;
+    
+    let protocol = `🔥 PHASE 1: WARM-UP\n`;
+    protocol += `• 5-10 minutes light cardio\n`;
+    protocol += `• Dynamic stretching\n`;
+    protocol += `• Mobility exercises\n\n`;
+    
+    protocol += `💪 PHASE 2: MAIN WORKOUT (${focus})\n`;
+    exercises.forEach((exercise, index) => {
+      protocol += `• ${exercise.name}: ${exercise.sets}x${exercise.reps}\n`;
+    });
+    
+    protocol += `\n⏱️ REST INTERVALS:\n`;
+    protocol += level === 'Advanced' ? '• 90-120 seconds between sets\n' :
+                level === 'Intermediate' ? '• 60-90 seconds between sets\n' :
+                '• 45-60 seconds between sets\n';
+    
+    protocol += `\n🧘‍♂️ PHASE 3: COOL DOWN\n`;
+    protocol += `• 5 minutes static stretching\n`;
+    protocol += `• Foam rolling\n`;
+    protocol += `• Hydrate well\n\n`;
+    
+    protocol += `🎯 FOCUS: ${goal === 'Build muscle' ? 'Control form, progressive overload' :
+                 goal === 'Lose fat' ? 'High intensity, minimal rest' :
+                 'Consistency, enjoyment'}`;
+    
+    return protocol;
+  };
+
+  const getRepRange = (goal: string, level: string, index: number): string => {
+    if (goal === 'Build muscle') {
+      return level === 'Advanced' ? '6-8' : level === 'Intermediate' ? '8-12' : '12-15';
+    } else if (goal === 'Lose fat') {
+      return level === 'Advanced' ? '12-15' : level === 'Intermediate' ? '15-20' : '20-25';
+    } else {
+      return level === 'Advanced' ? '10-12' : level === 'Intermediate' ? '12-15' : '15-20';
+    }
+  };
+
+  return { generateWorkout, loading };
+};

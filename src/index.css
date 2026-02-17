@@ -1,0 +1,63 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Header Logo Styles */
+header {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* Ensure layout stacks if needed, though original layout might rely on specific css. Based on Header.tsx, it has <a>, badge, h1, disclaimer. */
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.camtech-logo-link {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  z-index: 10;
+}
+
+.camtech-logo {
+  height: 80px;
+  /* Adjust size */
+  width: auto;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 900px) {
+  header {
+    padding-top: 60px;
+    /* Make space for logo on mobile if we keep it absolute */
+  }
+
+  .camtech-logo-link {
+    left: 50%;
+    top: 10px;
+    transform: translateX(-50%);
+  }
+}

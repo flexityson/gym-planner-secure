@@ -1,0 +1,5 @@
+commit c6153565e531764ab966908d15da5552ef3bcb80
+Author: flexityson <chanmony205@gmail.com>
+Date:   Thu Feb 5 23:31:03 2026 +0700
+
+    fix the whole web according to feedback from class

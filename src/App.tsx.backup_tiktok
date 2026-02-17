@@ -1,0 +1,134 @@
+import { useState } from 'react';
+import Header from './components/Header';
+import ConfigPanel from './components/ConfigPanel';
+import ResultsPanel from './components/ResultsPanel';
+import Chatbot from './components/Chatbot';
+import Timer from './components/Timer';
+import AnalyticsDashboard from './components/AnalyticsDashboard';
+import ProgressTracker from './components/ProgressTracker';
+import CommunitySharing from './components/CommunitySharing';
+import './App.css';
+
+interface Exercise {
+  name: string;
+  sets: number;
+  reps: string;
+}
+
+interface Nutrition {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  tdee: number;
+}
+
+function App() {
+  const [currentProtocol, setCurrentProtocol] = useState('');
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [nutrition, setNutrition] = useState<Nutrition | null>(null);
+  const [showAnalytics, setShowAnalytics] = useState(true);
+
+  const handleGenerate = (protocol: string, ex: Exercise[], nut: Nutrition) => {
+    setCurrentProtocol(protocol);
+    setExercises(ex);
+    setNutrition(nut);
+  };
+
+  // Mock data for analytics
+  const analyticsData = {
+    workoutsThisWeek: 4,
+    caloriesBurned: 2850,
+    progressPercentage: 75,
+    streakDays: 14
+  };
+
+  return (
+    <div className="app-container">
+      <Timer />
+      <Chatbot />
+      
+      <div className="container">
+        <Header />
+        
+        <div className="premium-banner">
+          <h3><i className="fas fa-crown"></i> CAMTECH PRO FEATURES</h3>
+          <p>Unlock advanced analytics, progress tracking, and community features</p>
+          <div className="premium-features">
+            <div className="premium-feature">
+              <i className="fas fa-brain"></i>
+              <div>AI Workout Optimization</div>
+            </div>
+            <div className="premium-feature">
+              <i className="fas fa-video"></i>
+              <div>Form Analysis Videos</div>
+            </div>
+            <div className="premium-feature">
+              <i className="fas fa-chart-pie"></i>
+              <div>Advanced Analytics</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid">
+          <ConfigPanel onGenerate={handleGenerate} />
+          <ResultsPanel 
+            protocol={currentProtocol}
+            exercises={exercises}
+            nutrition={nutrition}
+          />
+        </div>
+
+        {showAnalytics && (
+          <>
+            <AnalyticsDashboard {...analyticsData} />
+            
+            <div className="grid" style={{ marginTop: '30px' }}>
+              <ProgressTracker />
+              <CommunitySharing />
+            </div>
+          </>
+        )}
+
+        <div className="achievement-badges">
+          <div className="badge-item unlocked">
+            <i className="fas fa-dumbbell"></i>
+            <span>First Workout</span>
+          </div>
+          <div className="badge-item unlocked">
+            <i className="fas fa-fire"></i>
+            <span>7-Day Streak</span>
+          </div>
+          <div className="badge-item unlocked">
+            <i className="fas fa-trophy"></i>
+            <span>Goal Achiever</span>
+          </div>
+          <div className="badge-item locked">
+            <i className="fas fa-crown"></i>
+            <span>Elite Trainer</span>
+          </div>
+          <div className="badge-item locked">
+            <i className="fas fa-users"></i>
+            <span>Community Leader</span>
+          </div>
+        </div>
+
+        <footer style={{ 
+          textAlign: 'center', 
+          marginTop: '50px', 
+          paddingTop: '20px', 
+          borderTop: '1px solid var(--glass-border)',
+          color: 'var(--text-muted)',
+          fontSize: '0.8rem'
+        }}>
+          <p>© 2024 GYM PLANNER CAMTECH | Elite Protocol v3.5</p>
+          <p style={{ fontSize: '0.7rem', opacity: 0.7 }}>
+            Professional fitness planning platform. Always consult with healthcare professionals before starting any new exercise program.
+          </p>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+export default App;

@@ -1,0 +1,42 @@
+import { getTikTokLink } from '../utils/tiktokLinks';
+
+export const useWorkoutGenerator = () => {
+  const muscleGroups: Record<string, string[]> = {
+    'chest': ['Bench Press', 'Push-ups', 'Chest Flyes', 'Incline Dumbbell Press'],
+    'legs': ['Squats', 'Lunges', 'Leg Press', 'Calf Raises'],
+    'back': ['Pull-ups', 'Rows', 'Lat Pulldowns'],
+    'shoulders': ['Shoulder Press', 'Lateral Raises'],
+    'arms': ['Bicep Curls', 'Tricep Extensions']
+  };
+
+  const generateWorkout = (selectedGroups: string[], duration: number) => {
+    const exercises: any[] = [];
+    
+    selectedGroups.forEach(group => {
+      const groupExercises = muscleGroups[group] || [];
+      groupExercises.forEach(exerciseName => {
+        // Generate sets based on duration
+        const sets = duration > 60 ? 4 : duration > 45 ? 3 : 2;
+        const reps = duration > 60 ? '12-15' : duration > 45 ? '10-12' : '8-10';
+        
+        // Get TikTok link for this exercise
+        const tiktokLink = getTikTokLink(exerciseName);
+        
+        exercises.push({
+          name: exerciseName,
+          sets: sets,
+          reps: reps,
+          tiktokLink: tiktokLink  // Add TikTok link here
+        });
+      });
+    });
+
+    // Limit number of exercises based on duration
+    const maxExercises = Math.floor(duration / 10);
+    return exercises.slice(0, maxExercises);
+  };
+
+  return { generateWorkout };
+};
+
+export default useWorkoutGenerator;

@@ -1,0 +1,298 @@
+import React, { useState } from 'react';
+import { useWorkoutGenerator } from '../hooks/useWorkoutGenerator';
+
+interface ConfigPanelProps {
+  onGenerate: (protocol: string, exercises: any[], nutrition: any) => void;
+}
+
+const ConfigPanel: React.FC<ConfigPanelProps> = ({ onGenerate }) => {
+  const [gender, setGender] = useState('Male');
+  const [age, setAge] = useState(25);
+  const [weight, setWeight] = useState(70);
+  const [height, setHeight] = useState(175);
+  const [workoutsPerWeek, setWorkoutsPerWeek] = useState('3');
+  const [activity, setActivity] = useState('1.55');
+  const [level, setLevel] = useState('Intermediate');
+  const [intensityMod, setIntensityMod] = useState('1');
+  const [goal, setGoal] = useState('Build muscle');
+  const [focus, setFocus] = useState('Chest');
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  
+  const { generateWorkout, loading } = useWorkoutGenerator();
+
+  const validateForm = (): boolean => {
+    const newErrors: { [key: string]: string } = {};
+    
+    if (age < 13 || age > 70) {
+      newErrors.age = 'Age must be between 13-70';
+    }
+    
+    if (weight < 40 || weight > 200) {
+      newErrors.weight = 'Weight must be between 40-200kg';
+    }
+    
+    if (height < 100 || height > 250) {
+      newErrors.height = 'Height must be between 100-250cm';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleGenerate = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      const params = {
+        gender,
+        age,
+        weight,
+        height,
+        level,
+        goal,
+        focus,
+        workoutsPerWeek,
+        activity,
+        intensityMod
+      };
+      
+      const result = await generateWorkout(params);
+      onGenerate(result.protocol, result.exercises, result.nutrition);
+      
+      // Show success notification
+      if (typeof window !== 'undefined') {
+        showNotification('Workout generated successfully!', 'success');
+      }
+    } catch (error) {
+      console.error('Generation error:', error);
+      if (typeof window !== 'undefined') {
+        showNotification('Failed to generate workout. Please try again.', 'error');
+      }
+    }
+  };
+
+  const showNotification = (message: string, type: string) => {
+    // Simple notification implementation
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.padding = '15px 20px';
+    notification.style.background = type === 'success' ? 'var(--accent)' : 'var(--danger)';
+    notification.style.color = 'white';
+    notification.style.borderRadius = '12px';
+    notification.style.zIndex = '10000';
+    notification.style.boxShadow = '0 10px 30px rgba(0,0,0,0.3)';
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.remove();
+    }, 3000);
+  };
+
+  return (
+    <div className="card">
+      <div className="section-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <i className="fas fa-user-gear"></i>
+          <h2>Configuration</h2>
+        </div>
+        <div className="api-status online">
+          <i className="fas fa-check-circle"></i> AI Ready
+        </div>
+      </div>
+      
+      <div className="form-group">
+        <label>Gender</label>
+        <select id="gender" value={gender} onChange={(e) => setGender(e.target.value)}>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Prefer not to say">Prefer not to say</option>
+        </select>
+      </div>
+      
+      <div className="form-row">
+        <div className="form-group">
+          <label>Age <span style={{ color: 'var(--danger)' }}>*</span></label>
+          <input 
+            type="number" 
+            id="age" 
+            value={age}
+            onChange={(e) => setAge(parseInt(e.target.value) || 25)}
+            min="13" 
+            max="70" 
+            required
+          />
+          {errors.age && <div className="error-message" style={{ display: 'block' }}>{errors.age}</div>}
+        </div>
+        <div className="form-group">
+          <label>Weight (kg) <span style={{ color: 'var(--danger)' }}>*</span></label>
+          <input 
+            type="number" 
+            id="weight" 
+            value={weight}
+            onChange={(e) => setWeight(parseInt(e.target.value) || 70)}
+            min="40" 
+            max="200" 
+            required
+          />
+          {errors.weight && <div className="error-message" style={{ display: 'block' }}>{errors.weight}</div>}
+        </div>
+      </div>
+      
+      <div className="form-row">
+        <div className="form-group">
+          <label>Height (cm) <span style={{ color: 'var(--danger)' }}>*</span></label>
+          <input 
+            type="number" 
+            id="height" 
+            value={height}
+            onChange={(e) => setHeight(parseInt(e.target.value) || 175)}
+            min="100" 
+            max="250" 
+            required
+          />
+          {errors.height && <div className="error-message" style={{ display: 'block' }}>{errors.height}</div>}
+        </div>
+        <div className="form-group">
+          <label>Workouts/Week</label>
+          <select 
+            id="workoutsPerWeek" 
+            value={workoutsPerWeek}
+            onChange={(e) => setWorkoutsPerWeek(e.target.value)}
+          >
+            <option value="2">2 days</option>
+            <option value="3">3 days</option>
+            <option value="4">4 days</option>
+            <option value="5">5 days</option>
+            <option value="6">6 days</option>
+          </select>
+        </div>
+      </div>
+      
+      <div className="form-row">
+        <div className="form-group">
+          <label>Activity Level</label>
+          <select id="activity" value={activity} onChange={(e) => setActivity(e.target.value)}>
+            <option value="1.2">Sedentary</option>
+            <option value="1.375">Lightly Active</option>
+            <option value="1.55">Moderately Active</option>
+            <option value="1.725">Very Active</option>
+            <option value="1.9">Extremely Active</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Experience</label>
+          <select id="level" value={level} onChange={(e) => setLevel(e.target.value)}>
+            <option value="New">New to Gym</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+      </div>
+      
+      <div className="form-group">
+        <label>Intensity</label>
+        <select id="intensityMod" value={intensityMod} onChange={(e) => setIntensityMod(e.target.value)}>
+          <option value="1">Standard</option>
+          <option value="1.2">Hardcore (+20%)</option>
+          <option value="0.8">Recovery (-20%)</option>
+        </select>
+      </div>
+      
+      <div className="form-group">
+        <label>Goal</label>
+        <select id="goal" value={goal} onChange={(e) => setGoal(e.target.value)}>
+          <option value="Build muscle">Build Muscle</option>
+          <option value="Lose fat">Lose Fat</option>
+          <option value="Stay fit">Stay Fit & Toned</option>
+        </select>
+      </div>
+      
+      <div className="form-group">
+        <label>Focus Area</label>
+        <select id="focus" value={focus} onChange={(e) => setFocus(e.target.value)}>
+          <option value="Chest">Chest</option>
+          <option value="Back">Back</option>
+          <option value="Legs">Legs</option>
+          <option value="Arms">Arms</option>
+          <option value="Shoulders">Shoulders</option>
+          <option value="Full body">Full Body</option>
+        </select>
+      </div>
+
+      <div className="btn-group">
+        <button 
+          className="btn btn-generate" 
+          onClick={handleGenerate}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <i className="fas fa-spinner fa-spin"></i> GENERATING...
+            </>
+          ) : (
+            <>
+              <span>GENERATE PROTOCOL</span>
+              <i className="fas fa-bolt"></i>
+            </>
+          )}
+        </button>
+        <button id="downloadBtn" className="btn btn-download" style={{ display: 'none' }}>
+          DOWNLOAD FULL PDF <i className="fas fa-file-pdf"></i>
+        </button>
+        <button className="btn btn-spotify">
+          <i className="fab fa-spotify"></i> SPOTIFY WORKOUT MUSIC
+        </button>
+        <button className="btn btn-timer">
+          <i className="fas fa-stopwatch"></i> OPEN WORKOUT TIMER
+        </button>
+      </div>
+
+      {loading && (
+        <div className="api-loading" style={{ display: 'block', textAlign: 'center', padding: '10px' }}>
+          <i className="fas fa-spinner fa-spin"></i> Generating your personalized workout...
+        </div>
+      )}
+
+      <div className="config-progress" style={{ marginTop: '20px' }}>
+        <div 
+          className="config-fill" 
+          style={{ 
+            width: '100%',
+            background: 'linear-gradient(to right, var(--primary), var(--secondary))'
+          }}
+        ></div>
+      </div>
+      
+      <div className="feature-badges" style={{ 
+        display: 'flex', 
+        gap: '10px', 
+        marginTop: '20px', 
+        flexWrap: 'wrap' 
+      }}>
+        <span className="feature-badge">
+          <i className="fas fa-brain"></i> AI-Powered
+        </span>
+        <span className="feature-badge">
+          <i className="fas fa-dumbbell"></i> Smart Workouts
+        </span>
+        <span className="feature-badge">
+          <i className="fas fa-utensils"></i> Nutrition
+        </span>
+        <span className="feature-badge">
+          <i className="fas fa-music"></i> Spotify
+        </span>
+        <span className="feature-badge">
+          <i className="fas fa-robot"></i> AI Coach
+        </span>
+      </div>
+    </div>
+  );
+};
+
+export default ConfigPanel;
