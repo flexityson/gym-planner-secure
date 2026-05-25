@@ -1,4 +1,4 @@
-# 🏋️‍♂️ Gym Planner Secure
+# Gym Planner Secure
 
 > **Professional Workout Planning & Tracking Application**  
 > *Built with React, TypeScript, Vite & Netlify Functions*
@@ -15,31 +15,31 @@
   <img src="https://img.shields.io/badge/-Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" alt="Netlify">
 </div>
 
-## ✨ Features
+##  Features
 
-### 🎯 Core Functionality
-- **📋 Smart Workout Generation** - Create personalized workout plans
-- **🏋️‍♂️ Exercise Database** - Curated exercises with instructions
-- **📊 Progress Tracking** - Monitor your fitness journey
-- **⏱️ Integrated Workout Timer** - Built-in timer for rest periods
+###  Core Functionality
+- ** Smart Workout Generation** - Create personalized workout plans
+- ** Exercise Database** - Curated exercises with instructions
+- ** Progress Tracking** - Monitor your fitness journey
+- ** Integrated Workout Timer** - Built-in timer for rest periods
 
-### 🛠️ Advanced Tools
-- **📄 PDF Export** - Download workout plans as printable PDFs
-- **💪 Motivational System** - Dynamic fitness quotes
-- **🌤️ Weather Integration** - Suggestions for outdoor workouts
-- **🔒 Secure Architecture** - Protected API endpoints
+###  Advanced Tools
+- ** PDF Export** - Download workout plans as printable PDFs
+- ** Motivational System** - Dynamic fitness quotes
+- ** Weather Integration** - Suggestions for outdoor workouts
+- ** Secure Architecture** - Protected API endpoints
 
-### 🎨 User Experience
-- **📱 Fully Responsive** - Works on all devices
-- **🎨 Modern UI/UX** - Glassmorphism design with gradients
-- **⚡ Blazing Fast** - Optimized with Vite
-- **🔔 Real-time Notifications** - Interactive feedback
+###  User Experience
+- ** Fully Responsive** - Works on all devices
+- ** Modern UI/UX** - Glassmorphism design with gradients
+- ** Blazing Fast** - Optimized with Vite
+- ** Real-time Notifications** - Interactive feedback
 
-## 🖥️ Live Demo
+##  Live Demo
 
-**🌐 Live Application:** (https://gym-planner-secure.vercel.app/)
+** Live Application:** (https://gym-planner-secure.vercel.app/)
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 - Node.js 18+
@@ -75,7 +75,7 @@ npm run type-check   # TypeScript type checking
 npm run deploy       # Deploy to Netlify
 \`\`\`
 
-## 📁 Project Structure
+##  Project Structure
 
 \`\`\`
 gym-planner-secure/
@@ -93,7 +93,7 @@ gym-planner-secure/
 └── tests/                # Test files
 \`\`\`
 
-## 🔧 Tech Stack
+##  Tech Stack
 
 - **Frontend**: React 18 + TypeScript
 - **Build Tool**: Vite
@@ -101,14 +101,14 @@ gym-planner-secure/
 - **Backend**: Netlify Functions
 - **Deployment**: Netlify
 
-## 🌐 API Integration
+##  API Integration
 
 ### Built-in Functions
 - **\`/api/exercises\`** - Fetch exercises by category
 - **\`/api/quotes\`** - Get motivational quotes
 - **\`/api/weather\`** - Weather data
 
-## 🚀 Deployment
+##  Deployment
 
 ### Netlify Deployment
 1. Push code to GitHub
@@ -118,7 +118,7 @@ gym-planner-secure/
    - Publish Directory: \`dist\`
 4. Deploy!
 
-## 🤝 Contributing
+##  Contributing
 
 1. **Fork** the repository
 2. **Create** a feature branch
@@ -126,11 +126,11 @@ gym-planner-secure/
 4. **Push** to the branch
 5. **Open** a Pull Request
 
-## 📄 License
+##  License
 
 MIT License
 
-## 📞 Support
+##  Support
 
 - **GitHub Issues**: Report bugs or request features
 - **Project Link**: https://github.com/flexityson/gym-planner-secure
